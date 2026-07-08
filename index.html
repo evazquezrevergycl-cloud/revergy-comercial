@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Centro de Mando Comercial | Revergy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root{
+    color-scheme: light;
+    --navy-deep:#233448; --navy:#466294; --navy-2:#466193; --navy-light:#7791b8;
+    --navy-pale:#eef2f8; --paper:#f4f6f9; --white:#ffffff;
+    --ink:#1c2733; --ink-soft:#5b6b7d;
+    --amber:#d68a2c; --red:#b5482f; --green:#3f8f6b; --line:#dde3ec;
+    --font:'Heebo','Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,'Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+  .topbar{position:sticky;top:0;z-index:40;background:linear-gradient(120deg,var(--navy-deep) 0%,var(--navy) 100%);color:#fff;
+    display:flex;align-items:center;gap:16px;padding:10px 20px;box-shadow:0 2px 12px rgba(35,52,72,.18);}
+  .topbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--amber);}
+  .brand-row{display:flex;align-items:center;gap:11px;}
+  .brand-mark{width:32px;height:32px;flex:none;}
+  .brand-name{font-size:16px;font-weight:800;letter-spacing:.04em;white-space:nowrap;line-height:1;}
+  .brand-name span{color:var(--amber);}
+  .brand-sub{font-size:10px;color:var(--navy-light);letter-spacing:.13em;text-transform:uppercase;font-weight:700;margin-top:2px;}
+  .global-search{flex:1;max-width:400px;margin-left:auto;padding:8px 13px;border:none;border-radius:8px;font-family:inherit;font-size:13px;background:rgba(255,255,255,.14);color:#fff;}
+  .global-search::placeholder{color:#c3cede;}
+  .global-search:focus{outline:none;background:rgba(255,255,255,.22);}
+  .tb-actions{display:flex;gap:7px;}
+  .tb-btn{background:rgba(255,255,255,.14);border:none;color:#fff;font-family:inherit;font-size:11.5px;font-weight:600;padding:7px 11px;border-radius:7px;cursor:pointer;white-space:nowrap;}
+  .tb-btn:hover{background:rgba(255,255,255,.24);}
+  .topbar .stamp{font-size:11px;color:#c3cede;white-space:nowrap;}
+
+  .tabs{position:sticky;top:52px;z-index:30;background:var(--navy-deep);}
+  .tabs-inner{max-width:1300px;margin:0 auto;display:flex;gap:2px;padding:0 18px;overflow-x:auto;}
+  .tab{padding:12px 17px;font-size:13px;font-weight:600;color:#aebdd2;cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:3px solid transparent;transition:.15s;}
+  .tab:hover{color:#fff;} .tab.active{color:#fff;border-bottom-color:var(--amber);}
+  .tab .count{display:inline-block;margin-left:6px;font-size:11px;background:rgba(255,255,255,.12);padding:1px 7px;border-radius:20px;font-weight:600;}
+
+  .wrap{max-width:1300px;margin:0 auto;padding:22px 20px 70px;}
+  .view{display:none;} .view.active{display:block;}
+  .view-head{margin-bottom:16px;}
+  .view-title{font-size:20px;font-weight:800;color:var(--navy-deep);letter-spacing:-.01em;}
+  .view-desc{font-size:12.5px;color:var(--ink-soft);margin-top:5px;max-width:860px;line-height:1.5;}
+  .eyebrow{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--navy-light);font-weight:700;display:flex;align-items:center;gap:9px;margin-bottom:6px;}
+  .eyebrow::before{content:"";width:20px;height:2px;background:var(--amber);display:inline-block;}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-bottom:18px;}
+  .kpi-card{background:var(--white);border-radius:11px;padding:16px 17px;box-shadow:0 2px 12px rgba(35,52,72,.06);border:1px solid var(--line);position:relative;overflow:hidden;}
+  .kpi-card::after{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--navy-light);}
+  .kpi-card.k-red::after{background:var(--red);} .kpi-card.k-amber::after{background:var(--amber);}
+  .kpi-card.k-green::after{background:var(--green);} .kpi-card.k-navy::after{background:var(--navy);}
+  .kpi-value{font-size:25px;font-weight:800;color:var(--navy-deep);letter-spacing:-.02em;line-height:1;}
+  .kpi-label{font-size:11.5px;color:var(--ink-soft);margin-top:7px;line-height:1.3;font-weight:600;}
+  .kpi-hint{font-size:10px;color:var(--navy-light);margin-top:4px;}
+
+  .grid-2{display:grid;grid-template-columns:1.15fr 1fr;gap:16px;}
+  .grid-2b{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  .panel{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(35,52,72,.04);margin-bottom:16px;}
+  .panel-title{font-size:13px;font-weight:800;color:var(--navy-deep);margin-bottom:13px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .panel-title .hint{font-size:10px;font-weight:700;color:var(--navy-light);text-transform:uppercase;letter-spacing:.06em;}
+  .chart-box{position:relative;height:220px;}
+
+  .filterbar{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 10px rgba(35,52,72,.04);}
+  .filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .search{flex:1;min-width:190px;padding:9px 13px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff;}
+  .search:focus,.filter-sel:focus{outline:none;border-color:var(--navy-light);}
+  .filter-sel{padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12.5px;color:var(--ink);background:#fff;cursor:pointer;}
+  .btn{padding:9px 14px;border:1px solid var(--navy);background:var(--navy);color:#fff;border-radius:8px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .btn.ghost{background:#fff;color:var(--navy);} .btn:hover{opacity:.9;}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;}
+  .chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--navy-pale);color:var(--navy);cursor:pointer;border:1px solid transparent;}
+  .chip.active{background:var(--navy);color:#fff;}
+  .result-count{font-size:12px;color:var(--ink-soft);margin-left:auto;font-weight:600;}
+
+  .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{position:sticky;top:0;text-align:left;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);font-weight:800;padding:10px 12px;background:var(--navy-pale);border-bottom:2px solid var(--line);z-index:1;cursor:pointer;white-space:nowrap;}
+  thead th:hover{color:var(--navy);}
+  td{padding:9px 12px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top;line-height:1.4;}
+  tbody tr:hover{background:#fafbfd;} tr:last-child td{border-bottom:none;}
+  tr.cold{background:#fdf5f2;} tr.cold:hover{background:#fbeee9;}
+  .c-name{font-weight:700;color:var(--navy-deep);cursor:pointer;} .c-name:hover{text-decoration:underline;}
+  td.multiline{white-space:pre-line;font-size:11.5px;color:var(--ink-soft);max-width:240px;}
+  a{color:var(--navy);text-decoration:none;} a:hover{text-decoration:underline;}
+
+  .badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;display:inline-block;}
+  .lvl-ALTO{background:#e2f2ea;color:var(--green);} .lvl-MEDIO{background:#fbeed9;color:var(--amber);} .lvl-BAJO{background:#eef2f8;color:var(--navy);}
+  .st-neg{background:#fbe9e4;color:var(--red);} .st-of{background:#fbeed9;color:var(--amber);} .st-seg{background:#e6eefb;color:var(--navy-2);}
+  .st-cont{background:#eef2f8;color:var(--ink-soft);} .st-reu{background:#e2f2ea;color:var(--green);}
+  .st-sin{background:#f2f2f2;color:#8a97a5;} .st-no{background:#fbe9e4;color:var(--red);}
+  .un-tag{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px;background:var(--navy-pale);color:var(--navy);margin:1px 2px 1px 0;display:inline-block;}
+  .money{font-variant-numeric:tabular-nums;font-weight:700;color:var(--navy-deep);white-space:nowrap;} .cur{font-size:9.5px;font-weight:700;color:var(--amber);}
+  .prob-wrap{display:flex;align-items:center;gap:6px;} .prob-track{width:38px;height:6px;background:var(--navy-pale);border-radius:6px;overflow:hidden;} .prob-fill{height:100%;background:var(--navy);border-radius:6px;} .prob-num{font-size:11px;font-weight:700;color:var(--navy-deep);}
+  .edit-in{width:118px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:11.5px;color:var(--ink);}
+  .edit-in:focus{outline:none;border-color:var(--navy-light);}
+  .days-badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:20px;display:inline-block;margin-top:3px;}
+  .days-ok{background:#e2f2ea;color:var(--green);} .days-warn{background:#fbeed9;color:var(--amber);} .days-bad{background:#fbe9e4;color:var(--red);} .days-none{background:#f2f2f2;color:#8a97a5;}
+  .dist-table td{padding:7px 12px;} .dist-bar{height:8px;border-radius:6px;background:var(--navy);} .mini{font-size:11px;color:var(--ink-soft);}
+  .alert-item{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);} .alert-item:last-child{border-bottom:none;}
+  .alert-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:none;} .ad-red{background:var(--red);} .ad-amber{background:var(--amber);} .ad-navy{background:var(--navy);}
+  .alert-txt{font-size:12px;color:var(--ink);line-height:1.4;} .alert-txt b{color:var(--navy-deep);} .alert-meta{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
+  .fx-box{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;} .fx-field{display:flex;flex-direction:column;gap:4px;}
+  .fx-field label{font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;} .fx-field input{width:110px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:13px;font-weight:700;color:var(--navy-deep);}
+  .note{font-size:10.5px;color:var(--amber);font-weight:600;margin-top:8px;}
+  .fc-layout{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
+  .fc-table{flex:1 1 420px;min-width:300px;overflow-x:auto;}
+  .fc-table table{width:100%;}
+  .fc-side{flex:0 1 240px;min-width:200px;}
+
+  /* Calendar mirror */
+  .cal-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .cal-nav{display:flex;gap:6px;} .cal-nav button{border:1px solid var(--line);background:#fff;color:var(--navy-deep);font-family:inherit;font-size:13px;font-weight:700;padding:7px 12px;border-radius:8px;cursor:pointer;} .cal-nav button:hover{background:var(--navy-pale);}
+  .cal-range{font-size:15px;font-weight:800;color:var(--navy-deep);}
+  .cal-status{font-size:11.5px;color:var(--ink-soft);margin-left:auto;display:flex;align-items:center;gap:7px;}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;} .live-dot.err{background:var(--red);} .live-dot.load{background:var(--amber);}
+  .wk{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;min-width:820px;}
+  .wk-times{width:56px;flex:none;border-right:1px solid var(--line);background:var(--navy-pale);}
+  .wk-times .th{height:52px;border-bottom:1px solid var(--line);}
+  .wk-hr{height:44px;border-bottom:1px solid var(--line);font-size:10px;color:var(--ink-soft);text-align:right;padding:2px 6px 0 0;}
+  .wk-day{flex:1;min-width:104px;border-right:1px solid var(--line);position:relative;} .wk-day:last-child{border-right:none;}
+  .wk-dayhead{height:52px;border-bottom:1px solid var(--line);text-align:center;padding:7px 4px;}
+  .wk-dayhead .dn{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;}
+  .wk-dayhead .dd{font-size:17px;font-weight:800;color:var(--navy-deep);}
+  .wk-dayhead.today .dd{color:#fff;background:var(--amber);width:28px;height:28px;line-height:28px;border-radius:50%;margin:2px auto 0;font-size:14px;}
+  .wk-col{position:relative;}
+  .wk-line{position:absolute;left:0;right:0;height:44px;border-bottom:1px solid #eef1f6;}
+  .wk-ev{position:absolute;left:3px;right:3px;border-radius:6px;padding:3px 6px;font-size:10.5px;line-height:1.25;overflow:hidden;cursor:pointer;border-left:3px solid var(--navy);background:#e6eefb;color:var(--navy-2);box-shadow:0 1px 3px rgba(35,52,72,.12);}
+  .wk-ev.org{border-left-color:var(--amber);background:#fbeed9;color:#8a5a1a;}
+  .wk-ev .evt-t{font-weight:700;} .wk-ev .evt-time{font-size:9.5px;opacity:.85;}
+  .wk-allday{padding:3px 6px;border-bottom:1px solid var(--line);min-height:22px;background:#fafbfd;}
+  .allday-ev{font-size:10px;font-weight:700;background:#e2f2ea;color:var(--green);border-radius:5px;padding:2px 6px;margin:2px 2px 0 0;display:inline-block;cursor:pointer;}
+  .cal-empty{padding:40px;text-align:center;color:var(--ink-soft);font-size:13px;}
+  .cal-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--ink-soft);}
+  .cal-legend span{display:flex;align-items:center;gap:6px;} .lg-box{width:12px;height:12px;border-radius:3px;display:inline-block;}
+
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(35,52,72,.55);z-index:60;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.open{display:flex;}
+  .modal{background:#fff;border-radius:14px;max-width:520px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .modal-head{background:linear-gradient(120deg,var(--navy-deep),var(--navy));color:#fff;padding:18px 22px;position:relative;}
+  .modal-head h3{font-size:18px;font-weight:800;} .modal-head .sub{font-size:12px;color:#c3cede;margin-top:3px;}
+  .modal-close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.16);border:none;color:#fff;width:28px;height:28px;border-radius:7px;font-size:16px;cursor:pointer;}
+  .modal-body{padding:20px 22px;}
+  .mfield{margin-bottom:14px;} .mfield label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);display:block;margin-bottom:5px;}
+  .mval{font-size:13px;color:var(--ink);line-height:1.5;white-space:pre-line;}
+  .mfield input,.mfield textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;color:var(--ink);}
+  .mfield textarea{min-height:70px;resize:vertical;}
+  .join-btn{display:inline-block;background:var(--navy);color:#fff;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:700;margin-top:4px;}
+  .join-btn:hover{opacity:.9;text-decoration:none;}
+  .brief-url{margin-bottom:12px;}
+  .brief-url label{display:block;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+  .brief-url input{width:100%;max-width:560px;padding:8px 11px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12.5px;color:var(--ink);}
+  .brief-url input:focus{outline:none;border-color:var(--navy-light);}
+  .brief-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+  .brief-status{font-size:12px;color:var(--ink-soft);margin-left:4px;}
+  .brief-out{white-space:normal;font-family:var(--font);font-size:13px;line-height:1.6;color:var(--ink);background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:22px 24px;max-height:62vh;overflow:auto;}
+  .brief-out .bh{font-weight:800;color:var(--navy-deep);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 7px;padding-bottom:5px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;}
+  .brief-out .bh::before{content:"";width:14px;height:2px;background:var(--amber);flex:none;}
+  .brief-out .bmeta{font-weight:700;color:var(--navy);font-size:13.5px;margin-bottom:3px;}
+  .brief-out .bli{font-size:12.5px;line-height:1.5;padding:2px 0 2px 2px;color:var(--ink);}
+  .brief-out .bp{font-size:12.5px;line-height:1.5;color:var(--ink);}
+  .brief-out .bsp{height:5px;}
+  .brief-hint{font-size:11px;color:var(--ink-soft);margin-top:12px;}
+  .btn:disabled{opacity:.55;cursor:default;}
+
+  footer{background:var(--navy-deep);color:#aebdd2;font-size:11.5px;text-align:center;padding:20px;line-height:1.6;border-top:3px solid var(--amber);}
+  footer b{color:#fff;}
+  @media(max-width:900px){.kpi-grid{grid-template-columns:1fr 1fr;}.grid-2,.grid-2b,.grid-3{grid-template-columns:1fr;}.tabs{top:0;}.topbar{flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand-row">
+    <svg class="brand-mark" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 54 L32 10 L56 54 Z" fill="none" stroke="#d68a2c" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M22 54 L32 34 L42 54 Z" fill="#7791b8"/>
+      <circle cx="32" cy="24" r="4" fill="#d68a2c"/>
+    </svg>
+    <div>
+      <div class="brand-name">REVERGY<span> ·</span></div>
+      <div class="brand-sub">Centro de Mando Comercial</div>
+    </div>
+  </div>
+  <input class="global-search" id="globalSearch" placeholder="🔎 Búsqueda global: cliente, contacto, oportunidad…">
+  <div class="tb-actions">
+    <button class="tb-btn" id="btnExport" title="Descargar copia de tu seguimiento">💾 Backup</button>
+    <button class="tb-btn" id="btnImport" title="Restaurar seguimiento desde un backup">⤓ Importar</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+  </div>
+  <span class="stamp" id="stamp"></span>
+</div>
+
+<nav class="tabs"><div class="tabs-inner" id="tabs"></div></nav>
+
+<div class="wrap">
+  <section class="view active" id="view-mando">
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="grid-2">
+      <div class="panel"><div class="panel-title">Embudo comercial por etapa <span class="hint">Chile + Perú</span></div><div class="chart-box"><canvas id="chartFunnel"></canvas></div></div>
+      <div class="panel"><div class="panel-title">Prioridad de clientes</div><div class="chart-box"><canvas id="chartNivel"></canvas></div></div>
+    </div>
+    <div class="grid-2b">
+      <div class="panel"><div class="panel-title">Carga por responsable</div><div class="chart-box" style="height:200px"><canvas id="chartResp"></canvas></div></div>
+      <div class="panel"><div class="panel-title">Oportunidades por unidad <span class="hint">inferida</span></div><div class="chart-box" style="height:200px"><canvas id="chartUnidad"></canvas></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Forecast ponderado del pipeline <span class="hint">USD base · referencial</span></div>
+      <div class="fc-layout">
+        <div class="fc-table" id="forecastBody"></div>
+        <div class="fc-side">
+          <div class="fx-box">
+            <div class="fx-field"><label>CLP por USD</label><input type="number" id="fxCLP" value="950" step="1"></div>
+            <div class="fx-field"><label>EUR por USD</label><input type="number" id="fxEUR" value="0.92" step="0.01"></div>
+          </div>
+          <div class="note">⚠ Tipos de cambio referenciales y editables. No reemplazan la valorización oficial de cada contrato.</div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2b">
+      <div class="panel"><div class="panel-title">⚠ Alertas de seguimiento <span class="hint" id="alertCount"></span></div><div id="alertsBody"></div></div>
+      <div class="panel"><div class="panel-title">Detalle por estado</div><table class="dist-table" id="tblEstado"></table></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-pipeline">
+    <div class="view-head">
+      <div class="eyebrow">Pipeline regional</div>
+      <div class="view-title">Pipeline comercial · Chile + Perú</div>
+      <div class="view-desc">Vista unificada e interactiva. Combina filtros, ordena por columna y registra fechas y notas de seguimiento (se guardan en tu navegador). Haz clic en un cliente para ver su ficha y contactos.</div>
+    </div>
+    <div class="filterbar">
+      <div class="filter-row">
+        <input class="search" id="p-search" placeholder="Buscar cliente, situación, próximo paso…">
+        <select class="filter-sel" id="f-pais"><option value="">País: todos</option></select>
+        <select class="filter-sel" id="f-nivel"><option value="">Nivel: todos</option></select>
+        <select class="filter-sel" id="f-estado"><option value="">Estado: todos</option></select>
+        <select class="filter-sel" id="f-resp"><option value="">Responsable: todos</option></select>
+        <select class="filter-sel" id="f-unidad"><option value="">Unidad: todas</option></select>
+        <button class="btn ghost" id="btnClear">Limpiar</button>
+        <button class="btn ghost" id="btnCSV" title="Exportar la vista actual a CSV/Excel">⤓ CSV</button>
+      </div>
+      <div class="chips" id="quickChips"></div>
+    </div>
+    <div class="table-scroll"><table id="tbl-pipeline"></table></div>
+  </section>
+
+  <section class="view" id="view-contactos">
+    <div class="view-head">
+      <div class="eyebrow">Red comercial</div>
+      <div class="view-title">Directorio de contactos</div>
+      <div class="view-desc">Teléfonos normalizados y correos con enlace directo. Filtra por país y cliente o busca por nombre y cargo.</div>
+    </div>
+    <div class="filterbar"><div class="filter-row">
+      <input class="search" id="s-cont" placeholder="Buscar nombre, cliente, cargo, email…">
+      <select class="filter-sel" id="f-cont-pais"><option value="">País: todos</option></select>
+      <select class="filter-sel" id="f-cont-cliente"><option value="">Cliente: todos</option></select>
+      <span class="result-count" id="cont-count"></span>
+    </div></div>
+    <div class="table-scroll"><table id="tbl-cont"></table></div>
+  </section>
+
+  <section class="view" id="view-calendario">
+    <div class="view-head">
+      <div class="eyebrow">Espejo de Outlook · en vivo</div>
+      <div class="view-title">Calendario</div>
+      <div class="view-desc">Reflejo en tiempo real de tu calendario de Outlook (<span id="calOwner">tu cuenta</span>). Navega por semanas; los horarios se muestran en tu hora local. Haz clic en una reunión para ver detalles y unirte.</div>
+    </div>
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-title">Próximos hitos del pipeline <span class="hint">desde tus fechas registradas</span></div>
+      <div id="upcomingBody" class="mini">Registra «próximo hito» en la pestaña Pipeline para vincular aquí reuniones y fechas objetivo por cliente.</div>
+    </div>
+    <div class="cal-toolbar">
+      <div class="cal-nav">
+        <button id="calPrev">‹</button>
+        <button id="calToday">Hoy</button>
+        <button id="calNext">›</button>
+      </div>
+      <div class="cal-range" id="calRange">—</div>
+      <div class="cal-status"><span class="live-dot load" id="calDot"></span><span id="calStatus">Cargando…</span></div>
+    </div>
+    <div class="table-scroll"><div id="calGrid"></div></div>
+    <div class="cal-legend">
+      <span><span class="lg-box" style="background:#fbeed9;border-left:3px solid #d68a2c"></span> Reunión que organizas</span>
+      <span><span class="lg-box" style="background:#e6eefb;border-left:3px solid #466294"></span> Reunión invitado</span>
+      <span><span class="lg-box" style="background:#e2f2ea"></span> Todo el día</span>
+    </div>
+  </section>
+
+  <section class="view" id="view-briefing">
+    <div class="view-head">
+      <div class="eyebrow">Inteligencia comercial · bajo demanda</div>
+      <div class="view-title">Briefing semanal instantáneo</div>
+      <div class="view-desc">Genera ahora mismo el correo de inteligencia comercial (retrospectiva de la semana pasada + foco de la próxima), cruzando tu pipeline con tu calendario de Outlook en vivo. Úsalo cuando quieras enviarlo antes del lunes.</div>
+    </div>
+    <div class="panel">
+      <div class="brief-url">
+        <label for="dashUrl">Enlace del dashboard (para compartir con el equipo)</label>
+        <input id="dashUrl" placeholder="https://…  sube el HTML a OneDrive/SharePoint y pega aquí el enlace para compartir">
+      </div>
+      <div class="brief-bar">
+        <button class="btn" id="btnGenBrief">✦ Generar briefing ahora</button>
+        <button class="btn ghost" id="btnCopyBrief" style="display:none">⧉ Copiar correo</button>
+        <button class="btn ghost" id="btnRegen" style="display:none">↻ Regenerar</button>
+        <span class="brief-status" id="briefStatus">Listo para generar.</span>
+      </div>
+      <div class="brief-out" id="briefOut" style="display:none"></div>
+      <div class="brief-hint" id="briefHint">La generación usa tu pipeline (incluidas las fechas y notas que registraste) y tus reuniones reales de Outlook. El texto se produce con IA; revísalo antes de enviar.</div>
+    </div>
+  </section>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head"><button class="modal-close" id="modalClose">✕</button><h3 id="mTitle"></h3><div class="sub" id="mSub"></div></div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<footer>
+  <b>Revergy · Energías Renovables</b> &nbsp;|&nbsp; Servicios integrales en activos renovables (PV · Wind · BESS · Infraestructura eléctrica)<br>
+  Centro de Mando desarrollado por Esteban Vázquez — Director de Desarrollo de Negocios &nbsp;·&nbsp; Chile · Perú · Rep. Dominicana
+</footer>
+
+<script id="data" type="application/json">{"Resumen": [["Resumen comercial", "", "", "", "", "", "", "", "", "", ""], ["Todos los indicadores se actualizan solos al agregar clientes, contactos, montos o cambiar los desplegables", "", "", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", "", "", ""], ["", "Clientes Chile", "", "Clientes Perú", "", "Contactos", "", "Oportunidades activas", "", "", ""], ["", 39, "", 2, "", 82, "", 8, "", "", ""], ["", "", "", "", "", "", "", "", "", "", ""], ["", "Clientes en negociación", "", "Reuniones agendadas", "", "Ofertando", "", "Contratos con monto", "", "", ""], ["", 6, "", 1, "", 1, "", 6, "", "", ""], ["", "", "", "", "", "", "", "", "", "", ""], ["", "DISTRIBUCIÓN POR ESTADO", "", "", "", "", "", "", "", "", ""], ["", "Estado / Etapa", "Chile", "Perú", "Total", "", "", "", "", "", ""], ["", "Sin contacto", 5, 0, 5, "", "", "", "", "", ""], ["", "Contactado", 4, 1, 5, "", "", "", "", "", ""], ["", "No contesta", 2, 0, 2, "", "", "", "", "", ""], ["", "Reunión agendada", 1, 0, 1, "", "", "", "", "", ""], ["", "Ofertando", 1, 0, 1, "", "", "", "", "", ""], ["", "En negociación", 5, 1, 6, "", "", "", "", "", ""], ["", "En seguimiento", 21, 0, 21, "", "", "", "", "", ""], ["", "Total", 39, 2, 41, "", "", "", "", "", ""], ["", "CONTRATOS POR MONEDA", "", "", "", "", "", "", "", "", ""], ["", "Moneda", "N° contratos", "Monto total", "En negociación", "", "", "", "", "", ""], ["", "USD", 3, 5179523, 5179523, "", "", "", "", "", ""], ["", "CLP", 3, 5072590000, 5072590000, "", "", "", "", "", ""], ["", "EUR", 0, 0, 0, "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", "", "", ""], ["", "POR NIVEL", "", "", "", "", "POR RESPONSABLE", "", "", "", ""], ["", "Nivel", "Chile", "Perú", "Total", "", "Responsable", "Clientes", "", "", ""], ["", "ALTO", 15, 2, 17, "", "Esteban V", 33, "", "", ""], ["", "MEDIO", 16, 0, 16, "", "Eduardo C", 4, "", "", ""], ["", "BAJO", 8, 0, 8, "", "Wenceslao", 3, "", "", ""], ["", "", "", "", "", "", "No aplica", 1, "", "", ""]], "Chile": [["Seguimiento comercial · Chile", "", "", "", "", "", "", "", ""], ["Pipeline de gestión · elige Moneda y registra el Monto (se resalta en «En negociación») · puedes agregar clientes en las filas siguientes y se contabilizan solos", "", "", "", "", "", "", "", ""], ["Cliente", "Nivel", "Estado / Etapa", "Moneda", "Monto contrato", "Situación y oportunidades", "Responsable", "Próximos pasos", "Notas / Seguimiento"], ["Acciona", "BAJO", "Contactado", "", "", "- WIND O&M preventivos (oportunidad 2029)\n- FV O&M internalizado", "Esteban V", "Seguimiento comercial para crear nuevas oportunidades", ""], ["AES", "ALTO", "En negociación", "USD", 3000000, "Proyecto O&M Pampa", "Esteban V", "Confeccionando propuesta comercial", ""], ["MAINSTREAM", "ALTO", "En seguimiento", "", "", "- BOP y SETs\n- FV O&M Valle Escondido\n- FV O&M Pampa Tigre", "Wenceslao", "", ""], ["ACTIS", "BAJO", "Contactado", "", "", "", "Eduardo C", "", ""], ["ATLAS", "BAJO", "En seguimiento", "", "", "", "Esteban V", "", ""], ["AKUO", "MEDIO", "En seguimiento", "", "", "", "Esteban V", "Seguimiento comercial para crear nuevas oportunidades", ""], ["ANTUKO", "ALTO", "En seguimiento", "", "", "Estamos ofertando O&M 80MWh Stand Alone (se pierde el negocio por no aceptar condiciones contractuales)", "Esteban V", "Seguimiento comercial para crear nuevas oportunidades", ""], ["GRENERGY", "ALTO", "En seguimiento", "", "", "Se cerró el contrato \"Gabriela\"", "Esteban V", "Llamarlo semanalmente para nuevas oportunidades de servicios en Perú", ""], ["CarbonFree", "BAJO", "Sin contacto", "", "", "Falta coordinar reunión", "Eduardo C", "Insistirle a Eduardo para coordinar reunión", ""], ["Canadian Solar", "ALTO", "En negociación", "CLP", 4445590000, "- Cerrando el contrato de O&M BESS  Huatacondo", "Wenceslao", "Seguir depurando el contrato para que sea firmado", ""], ["Trina", "ALTO", "En seguimiento", "", "", "A la espera para ser Service Partners", "Esteban V", "Realizar seguimiento para coordinar reunión con \"Daniel\" y avanzar con el proyecto de ser Services Partners", ""], ["TotalEnergies", "ALTO", "En negociación", "CLP", 301000000, "- FV Santa Isabel (-->AES)", "Esteban V", "Firma de anexo de contrato", ""], ["AEDILES TALINAY", "BAJO", "Contactado", "", "", "No tienen más parques que operar ni contruir", "Esteban V", "", ""], ["Biwo Renovables", "MEDIO", "En seguimiento", "", "", "Se realizó reunión presencial", "Esteban V", "Realizar seguimiento para ingresar a nuevas licitaciones", ""], ["Copenhagen Infrastructure Partners (CIP)", "ALTO", "En seguimiento", "", "", "- Ejecutando O&M Stand Alone 1GWh", "Esteban V", "Seguimiento comercial para crear nuevas oportunidades", ""], ["ENEL", "ALTO", "En seguimiento", "", "", "- BOP Sol de Lila\n- O&M Valle del Sol\n- BOP y CU Guanchoi\n\n- Ofertando sinergia BOP y CU Sol de Lila\n- Canela I+II Contrato Wind", "Esteban V", "Seguimiento comercial", ""], ["OPDEnergy", "MEDIO", "Reunión agendada", "", "", "- BOP SET La Estrella (WF)", "Esteban V", "En Agosto tendremos reunión presencial junto a Alex para evaluar nuevos servicios", ""], ["SAFT", "ALTO", "En seguimiento", "", "", "BESS La Cabaña (Enel) + Capacitación en Argentina + Service Partners", "Esteban V", "Seguimiento comercial", ""], ["WiseEnergy / Nenergy", "BAJO", "Sin contacto", "", "", "", "Eduardo C", "", ""], ["X-Elio", "ALTO", "En negociación", "CLP", 326000000, "- O&M Uribe FV + BESS\n\n- En negociación O&M La Cruz\n- Cableado", "Esteban V", "Seguimiento comercial", ""], ["WPD", "MEDIO", "No contesta", "", "", "", "Esteban V", "", ""], ["Siemens Gamesa Renewable Energy", "MEDIO", "En seguimiento", "", "", "Se realizó reunión presencial de servicios Wind junto a Alex", "Esteban V", "Seguimiento comercial", ""], ["CCE", "MEDIO", "Sin contacto", "", "", "- FV La Huella", "Esteban V", "", ""], ["Colbun", "ALTO", "En seguimiento", "", "", "- O&M FV Ovejeria (PMGD)\n- O&M FV Diego de Almagro Sur\n- EOW Horizonte (finalizando)", "Esteban V", "Intentamos reunirnos pero no hubo mucho interés, hay que seguir insistiendo y hacer seguimiento comercial", ""], ["Sonnedix", "MEDIO", "En seguimiento", "", "", "Se realizó reunión presencial de servicios", "No aplica", "Seguimiento comercial", ""], ["EDP Renewables", "MEDIO", "Sin contacto", "", "", "", "Esteban V", "", ""], ["CATL", "MEDIO", "En seguimiento", "", "", "Service Partner", "Esteban V", "Seguimiento para coordinar una reunión presencial", ""], ["Hitium", "ALTO", "En seguimiento", "", "", "Service Partner 1.6GW de O&M", "Esteban V", "Seguimiento para cotizar proyecto de 1.6GW", ""], ["Sungrow", "MEDIO", "Sin contacto", "", "", "Service Partner", "Esteban V", "Completar documentación enviada por Ramón", ""], ["Huawei", "BAJO", "En seguimiento", "", "", "Service Partner", "Esteban V", "Es complejo ser Service Partners debido a que piden exclusividad", ""], ["Gotion", "MEDIO", "En seguimiento", "", "", "Service Partner", "Esteban V", "Coordinar nueva hora de reunión", ""], ["Verano Energy", "MEDIO", "En seguimiento", "", "", "Se realizó reunión presencial de servicios", "Esteban V", "Seguimiento de licitación de proyectos en Colombia", ""], ["Efragen", "BAJO", "En seguimiento", "", "", "", "Esteban V", "Falta coordinar reunión presencial", ""], ["Espinos", "ALTO", "Ofertando", "", "", "1.2GW en NTP para 2026. Mitad BESS y mitad eólico.", "Esteban V", "Confeccionando oferta por 480MWhs", ""], ["Nala", "ALTO", "En negociación", "USD", 859353, "Preparando propuesta para inicio de servicio Agosto", "Esteban V", "Esperando feedback de la propuesta enviada", ""], ["Envision", "MEDIO", "Contactado", "", "", "", "Eduardo C", "", ""], ["ENGIE", "MEDIO", "No contesta", "", "", "", "Esteban V", "", ""], ["JINKO", "MEDIO", "En seguimiento", "", "", "", "Esteban V", "Reagendar reunión", ""], ["ELECNOR Chile", "MEDIO", "En seguimiento", "", "", "Se realizó reunión presencial de servicios", "Esteban V", "Seguimiento comercial", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""]], "Perú": [["Seguimiento comercial · Perú", "", "", "", "", "", "", "", ""], ["Pipeline de gestión · elige Moneda y registra el Monto (se resalta en «En negociación») · puedes agregar clientes en las filas siguientes y se contabilizan solos", "", "", "", "", "", "", "", ""], ["Cliente", "Nivel", "Estado / Etapa", "Moneda", "Monto contrato", "Situación y oportunidades", "Responsable", "Próximos pasos", "Notas / Seguimiento"], ["Yinson Renewables", "ALTO", "En negociación", "USD", 1320170, "Licitando O&M BESS Matarani MMUSD3.2", "Wenceslao", "EN revisión de contrato", ""], ["ELECNOR Perú", "ALTO", "Contactado", "", "", "", "Esteban V", "Seguimiento comercial", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""], ["", "", "", "", "", "", "", "", ""]], "Contactos": [["Directorio de contactos", "", "", "", "", ""], ["Teléfonos normalizados y correos con enlace · agrega contactos en las filas siguientes y se contabilizan solos en el Resumen", "", "", "", "", ""], ["País", "Cliente", "Nombre y apellido", "Cargo", "Teléfono", "Email"], ["Chile", "Acciona", "Jose Luis Sancho", "Gerente Supply Chain", "+56 9 4408 4105", "joseluis.sancho.carcamo@acciona.com"], ["Chile", "Acciona", "Ignacio Leal", "Responsable PESG y PETS", "", "ileal@acciona.com"], ["Chile", "Acciona", "Patricio Garrido", "Jefe O&M Wind - Chile", "", "pgarrido@acciona.com"], ["Chile", "Acciona", "David Chavez", "Responsable PEPP", "+56 9 3469 5138", "djchavez@acciona.com"], ["Chile", "AES", "Maribel Vega", "O&M Renewable Contracts", "+56 9 8209 7572", "mvega1.c@aes.com"], ["Chile", "AES", "Gustavo Bopp", "Gerente Supply Chain", "+56 9 5226 9676", "gustavo.bopp@aes.com"], ["Chile", "AES", "Carolina Morales Vasquez", "Contract and Management Lead - Renewables Operations", "", "carolina.morales@aes.com"], ["Chile", "MAINSTREAM", "Victoriano Marquez", "Head of O&M LATAM at Mainstream", "+56 9 4234 6888", "victoriano.marquezdeprado@mainstreamrp.com"], ["Chile", "MAINSTREAM", "Rodrigo Ramirez", "Procurement LATAM ", "+56 9 3446 6213", "rodrigo.ramirez@mainstreamrp.com"], ["Chile", "MAINSTREAM", "Felipe Fernández Gutiérrez", "Operations Manager", "", "felipe.fernandezg@mainstreamrp.com"], ["Chile", "ACTIS", "Ivan Jara Carrasco", "", "+56 9 3390 3043", "ivanjaracarrasco@gmail.com"], ["Chile", "ACTIS", "Pablo Barra", "", "+56 9 8997 9020", ""], ["Chile", "ACTIS", "Petros Lamprinos", "", "+1 7373769198", ""], ["Chile", "ACTIS", "Pablo Fernández", "", "+56 9 3240 4089", ""], ["Chile", "ATLAS", "Gladson Paiva", "Logistics and Procurement Manager", "+55 1194272 4713", "gpaiva@atlasren.com"], ["Chile", "ATLAS", "Caio Lima", "O&M Inventory Senior Analyst", "+55 11 97568 1968", "clima@atlasren.com"], ["Chile", "ATLAS", "Pablo Fernández", "", "+56 9 3240 4089", ""], ["Chile", "ATLAS", "Pablo Barra", "O&M Manager", "+56 9 8997 9020", "pbarra@atlasren.com"], ["Chile", "AKUO", "Felipe Domic", "Senior Power Plant Manager", "+56 9 9231 0173", "domic@akuoenergy.com"], ["Chile", "AKUO", "Johan Bernard", "Storage Engineer", "+33 6 22 86 85 82", "jbernard@akuoenergy.com"], ["Chile", "AKUO", "Selim Dumlu", "Head of Interface", "", "dumlu@akuoenergy.com"], ["Chile", "AKUO", "Leonardo León", "Execution Project Manager", "+56 9 5740 3609", ""], ["Chile", "ANTUKO", "Alfonso Muñoz", "Director EPC", "+56 9 9363 8359", "alfonso.munoz@antuko.com"], ["Chile", "ANTUKO", "Anthon Miers", "", "", "anthon.miers@antuko.com"], ["Chile", "ANTUKO", "Miguel Ugarte", "Jefe Area EPC", "+56 9 4120 7311", "miguel.ugarte@antuko.com"], ["Chile", "GRENERGY", "Cristopher Merino Rubilar", "", "+56 9 4226 3891", "cmerino@grenergy.eu"], ["Chile", "GRENERGY", "Alis Mori Azua", "", "", "amori@grenergy.eu"], ["Chile", "GRENERGY", "Carlos Romo Santander", "", "", "cromo@grenergy.eu"], ["Chile", "CarbonFree", "Jose Cubillo Cordero", "Gerente de Operaciones", "+56 9 9098 3604", "jose@carbonfree.com"], ["Chile", "CarbonFree", "Maged Sami ", "Senior Vice President", "", "maged@carbonfree.com"], ["Chile", "Canadian Solar", "Alejandro Torres ", "", "+44 7341707539", "alejandro.torres@csestorage.com"], ["Chile", "Trina", "Leonardo Valencia", "Storage Delivery & Service Business Manager", "+56 9 5828 1535", "leonardo.valencia@trinasolar.com"], ["Chile", "Trina", "María Beatriz Barrios González", "Procurement Manager LAC", "+57 310 7675945", "maria.barrios@trinasolar.com"], ["Chile", "TotalEnergies", "Juan Jiménez G", "Site Manager", "+56 9 9400 6417", "juan.jimenezg@totalenergies.com"], ["Chile", "AEDILES TALINAY", "Alvaro Hermosilla A", "O&M Manager PV", "+56 9 3402 1835", "alvaro.hermosilla@aedilestalinay.com"], ["Chile", "Biwo Renovables", "Luis Cid", "Contract Manager", "+56 9 9132 7595", "luiscid@biworenovables.com"], ["Chile", "Copenhagen Infrastructure Partners (CIP)", "Gonzalo Hermosilla", "Development Manager", "+56 9 6586 3027", "gohe@cisc.dk"], ["Chile", "ENEL", "Parra Ojeda, Ana Cristina ", "Buyer Specialist Generation Procurement LATAM", "+56 9 7 611 76 84 / + 56 9 7 27 37 167", "cristina.parra@enel.com"], ["Chile", "ENEL", "Víctor Céspedes Molina", "Solar Power Generation Procurement", "+56 9 7307 4256", "victor.cespedes@enel.com"], ["Chile", "ENEL", "Valentina Quintana Michelangeli", "Buyer III Solar Procurement", "+56 9 9439 3553", "valentina.quintana@enel.com"], ["Chile", "ENEL", "Jorge Silva Miranda", "Supervisor O&M Solar - Guanchoi", "+56 9 6165 5828", "jorge.silva@enel.com"], ["Chile", "ENEL", "Daniel Canovas ", "Procurement", "", "daniel.canovas1@enel.com"], ["Chile", "OPDEnergy", "Lorena Martín Fombellida ", "", "", "lmartin@opdenergy.com"], ["Chile", "OPDEnergy", "Nicolás Díaz Muñoz ", "", "", "ndiaz@opdenergy.com"], ["Chile", "SAFT", "Juan Pinzon", "Project Engineering Technical Lead", "+1 904 265 6335", "juan.pinzon@saft.com"], ["Chile", "WiseEnergy / Nenergy", "Carmen Aguayo", "Senior Commercial Analyst", "+34 911 98 79 03", "carmen.aguayo@wise-energy.eu"], ["Chile", "X-Elio", "Alejandro Jaimes Aguirre", "O&M Regional Manager", "+52 7825285413", "alejandro.jaimes@x-elio.com"], ["Chile", "WPD", "Francisco Varas Pavez", "Technical Supervisor / Global Drive Train Specialist", "+56 9 5763 1287", "f.varas@wpd.cl"], ["Chile", "Siemens Gamesa Renewable Energy", "Fabian Faundes", "Procura", "", "fabian.faundes.ext@siemensgamesa.com"], ["Chile", "CCE", "Italo Repetto", "Country Manager", "+56 9 3949 2587", "i.repetto@cce-holding.com"], ["Chile", "Colbun", "Elias Labiano", "Supervisor O&M Solar - Diego de Almagro", "", "elabiano@colbun.cl"], ["Chile", "Colbun", "Alvaro Puelma", "Subgerente Área Solar", "+56 9 7987 5925", "apuelma@colbun.cl"], ["Chile", "Colbun", "Alvaro Neira", "", "", "aneira@colbun.cl"], ["Chile", "Colbun", "David Gabriel Rebolledo Ferrera", "", "", "drebolledo@colbun.cl"], ["Chile", "Colbun", "Gaston Adolfo Lagos Gatica ", "Jefe de Mantenimiento Eolico", "+56 9 5404 7185", "glagos@colbun.cl"], ["Chile", "Colbun", "Victor Vidal", "Ingeniero de Mantenimiento Eólico", "+56 9 5735 8527", "vvidal@colbun.cl"], ["Chile", "Sonnedix", "Jose Jara", "Team Leader O&M PMGD", "+56 9 4491 2247", "jose.jara@sonnedix.com"], ["Chile", "Sonnedix", "Gabriel Guimarães", "Asset Management Team", "+56 9 3459 4476", "gabriel.guimaraes@sonnedix.com"], ["Chile", "EDP Renewables", "Daniel Halpern", "Head of Procurement", "+56 9 4260 4722", "daniel.halpern@edf-re.cl"], ["Chile", "EDP Renewables", "Byatris Lopes", "Compras", "+55 11 99736 7431", "byatris.lopes@edp.com"], ["Chile", "EDP Renewables", "Alvaro Piedra Mendoza", "O&M PROCUREMENT EU & LATAM", "", "alvaro.piedramendoza@edp.com"], ["Chile", "CATL", "Marcel Peralta", "Managing Director LATAM", "+55 11 96338 9622", ""], ["Chile", "Hitium", "", "", "", ""], ["Chile", "Sungrow", "", "", "", ""], ["Chile", "Huawei", "Gustavo Adolfo Villegas Boyoli", "BESS & Smart Pv Regional Service Sales Senior Manager", "+52 1 55 2339 3061", ""], ["Chile", "Gotion", "", "", "", ""], ["Chile", "Verano Energy", "Marcos Impala", "Treasury Manager & Corporate Finance", "+54 9 11 3590 3842", "mimpala@veranoenergy.com"], ["Chile", "Efragen", "Dussan Gomez", "Jefe de compras", "+56 9 8574 5039", ""], ["Chile", "Espinos", "Max Morel", "Gerente de construcción", "+56 9 9291 9534", ""], ["Chile", "Espinos", "Thomas Schroter", "Director ejecutivo", "+56 9 8596 2806", ""], ["Chile", "Nala", "Tirso Mundarai", "Gerente de construcción", "+56 9 4227 0024", "tirso.mundarain@nalarenewables.com"], ["Chile", "Envision", "Xavier Martínez-Falero Vilà", "EU & LATAM BESS O&M Director", "+34 650.304.601", "xavier.falero@envision-energy.com"], ["Chile", "Envision", "Gonzalo Perez", "responsable de D&S de BESS para LATAM", "", "gonzalo.perez@envision-energy.com"], ["Chile", "ENGIE", "Rodrigo Rafael RODRIGUEZ FRANCO", "Comprador de Servicios", "+56 9 3911 9098", "rodrigo.rodriguezf@engie.com"], ["Chile", "ENGIE", "Sergio García A.", "Líder O&M Zona Centro", "+56 9 4459 4344", "sergio.garcia@engie.com"], ["Chile", "ENGIE", "Jazmín Barraza Tapia", "Buyer Services", "+56 9 6632 3937", "jazmin.barraza@external.engie.com"], ["Chile", "ENGIE", "Grace León Anabalón", "Compradora Especialista de Proyectos Senior", "+56 9 9079 1388", "grace.leon@engie.com"], ["Chile", "ENGIE", "Francisco Pino Castillo", "Comprador de Servicios Técnicos", "+56 55 2658273", "francisco.pino@engie.com"], ["Chile", "ENGIE", "Marcelo AVENDAÑO Antileo", "Jefe de Comisionamiento", "+56 9 3930 7569", "marcelo.avendano@engie.com"], ["Chile", "JINKO", "Pablo Millar Scott", "Sales Manager ESS Jinko", "+56 9 8254 4118", ""], ["Perú", "ELECNOR Perú", "Renan Lucas Ganassini", "Director de Proyectos Renovables", "", ""], ["Chile", "ELECNOR Chile", "Yulian Flores", "Jefe de compras Chile", "+56 9 7651 2801", ""], ["Perú", "Yinson Renewables", "Kasia Orzech", "Procurement Manager", "+47 406 255 71", "kasia.orzech@yinson.com"], ["Perú", "Yinson Renewables", "Friedar Frey", "Senior Asset Manager", "+44 7342 4914 57", "friedar.frey@yinson.com"], ["Perú", "Yinson Renewables", "Mariana Peddle", "", "", "mariana.peddle@yinson.com"], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""], ["", "", "", "", "", ""]], "Calendario de reuniones": [["", "", "", "", "", ""], ["", "", "", "", "", ""], ["Calendario de Reuniones Presenciales", "", "", "", "", ""], ["Semana del 22 al 30 de junio de 2026", "", "", "", "", ""], ["Hora", "Lunes 06", "Martes 07", "Miércoles 08", "Jueves 09", "Viernes 10"], ["08:00", "", "", "", "", ""], ["09:00", "", "", "", "", ""], ["10:00", "", "", "", "", ""], ["11:00", "", "", "", "", ""], ["12:00", "", "", "", "", ""], ["13:00", "", "", "", "", ""], ["14:00", "", "", "", "", ""], ["15:00", "", "", "", "", ""], ["16:00", "", "", "", "", ""], ["17:00", "", "", "", "", ""], ["18:00", "", "", "", "", ""], ["Revergy · Energías Renovables  |  Servicios integrales en activos renovables", "", "", "", "", ""], ["Desarrollado por Esteban Vázquez — Director de Desarrollo de Negocios", "", "", "", "", ""]], "Listas": [["Nivel", "Estado", "Responsable", "País", "Clientes", "Categoría", "Unidad", "EstadoAccion", "Moneda"], ["ALTO", "Sin contacto", "Esteban V", "Chile", "Acciona", "Interna", "Asset Management", "Pendiente", "USD"], ["MEDIO", "Contactado", "Eduardo C", "Perú", "AES", "Clientes", "Ingeniería", "En curso", "CLP"], ["BAJO", "No contesta", "Wenceslao", "", "MAINSTREAM", "Proveedores", "PV O&M", "Completada", "EUR"], ["", "Reunión agendada", "No aplica", "", "ACTIS", "Modelo de negocio", "Wind O&M", "En pausa", ""], ["", "Ofertando", "", "", "ATLAS", "", "Transversal", "", ""], ["", "En negociación", "", "", "AKUO", "", "", "", ""], ["", "En seguimiento", "", "", "ANTUKO", "", "", "", ""], ["", "", "", "", "GRENERGY", "", "", "", ""], ["", "", "", "", "CarbonFree", "", "", "", ""], ["", "", "", "", "Canadian", "", "", "", ""], ["", "", "", "", "Trina", "", "", "", ""], ["", "", "", "", "Total Energies", "", "", "", ""], ["", "", "", "", "AEDILES TALINAY", "", "", "", ""], ["", "", "", "", "Biwo Renovables", "", "", "", ""], ["", "", "", "", "Copenhagen Infrastructure Partners (CIP)", "", "", "", ""], ["", "", "", "", "ENEL", "", "", "", ""], ["", "", "", "", "OPDEnergy", "", "", "", ""], ["", "", "", "", "SAFT", "", "", "", ""], ["", "", "", "", "WiseEnergy / Nenergy", "", "", "", ""], ["", "", "", "", "X-Elio", "", "", "", ""], ["", "", "", "", "WPD", "", "", "", ""], ["", "", "", "", "Siemens Gamesa Renewable Energy", "", "", "", ""], ["", "", "", "", "CCE", "", "", "", ""], ["", "", "", "", "Colbun", "", "", "", ""], ["", "", "", "", "Sonnedix", "", "", "", ""], ["", "", "", "", "EDP Renewables", "", "", "", ""], ["", "", "", "", "CATL", "", "", "", ""], ["", "", "", "", "Hitium", "", "", "", ""], ["", "", "", "", "Sungrow", "", "", "", ""], ["", "", "", "", "Huawei", "", "", "", ""], ["", "", "", "", "Gotion", "", "", "", ""], ["", "", "", "", "Verano Energy", "", "", "", ""], ["", "", "", "", "Efragen", "", "", "", ""], ["", "", "", "", "Espinos", "", "", "", ""], ["", "", "", "", "Nala", "", "", "", ""], ["", "", "", "", "Envision", "", "", "", ""], ["", "", "", "", "ENGIE", "", "", "", ""], ["", "", "", "", "JINKO", "", "", "", ""], ["", "", "", "", "ELECNOR Chile", "", "", "", ""], ["", "", "", "", "Yinson Renewables", "", "", "", ""], ["", "", "", "", "ELECNOR Perú", "", "", "", ""]], "_pipeline": [{"pais": "Chile", "cliente": "Acciona", "nivel": "BAJO", "estado": "Contactado", "moneda": "", "monto": "", "situacion": "- WIND O&M preventivos (oportunidad 2029)\n- FV O&M internalizado", "responsable": "Esteban V", "pasos": "Seguimiento comercial para crear nuevas oportunidades", "unidades": ["PV O&M", "WIND O&M"], "prob": 10}, {"pais": "Chile", "cliente": "AES", "nivel": "ALTO", "estado": "En negociación", "moneda": "USD", "monto": 3000000, "situacion": "Proyecto O&M Pampa", "responsable": "Esteban V", "pasos": "Confeccionando propuesta comercial", "unidades": ["PV O&M"], "prob": 70}, {"pais": "Chile", "cliente": "MAINSTREAM", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "- BOP y SETs\n- FV O&M Valle Escondido\n- FV O&M Pampa Tigre", "responsable": "Wenceslao", "pasos": "", "unidades": ["ENG", "PV O&M"], "prob": 20}, {"pais": "Chile", "cliente": "ACTIS", "nivel": "BAJO", "estado": "Contactado", "moneda": "", "monto": "", "situacion": "", "responsable": "Eduardo C", "pasos": "", "unidades": ["Transversal"], "prob": 10}, {"pais": "Chile", "cliente": "ATLAS", "nivel": "BAJO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "", "responsable": "Esteban V", "pasos": "", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "AKUO", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "", "responsable": "Esteban V", "pasos": "Seguimiento comercial para crear nuevas oportunidades", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "ANTUKO", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Estamos ofertando O&M 80MWh Stand Alone (se pierde el negocio por no aceptar condiciones contractuales)", "responsable": "Esteban V", "pasos": "Seguimiento comercial para crear nuevas oportunidades", "unidades": ["BESS", "PV O&M"], "prob": 20}, {"pais": "Chile", "cliente": "GRENERGY", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Se cerró el contrato \"Gabriela\"", "responsable": "Esteban V", "pasos": "Llamarlo semanalmente para nuevas oportunidades de servicios en Perú", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "CarbonFree", "nivel": "BAJO", "estado": "Sin contacto", "moneda": "", "monto": "", "situacion": "Falta coordinar reunión", "responsable": "Eduardo C", "pasos": "Insistirle a Eduardo para coordinar reunión", "unidades": ["Transversal"], "prob": 5}, {"pais": "Chile", "cliente": "Canadian Solar", "nivel": "ALTO", "estado": "En negociación", "moneda": "CLP", "monto": 4445590000, "situacion": "- Cerrando el contrato de O&M BESS  Huatacondo", "responsable": "Wenceslao", "pasos": "Seguir depurando el contrato para que sea firmado", "unidades": ["BESS", "PV O&M"], "prob": 70}, {"pais": "Chile", "cliente": "Trina", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "A la espera para ser Service Partners", "responsable": "Esteban V", "pasos": "Realizar seguimiento para coordinar reunión con \"Daniel\" y avanzar con el proyecto de ser Services Partners", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "TotalEnergies", "nivel": "ALTO", "estado": "En negociación", "moneda": "CLP", "monto": 301000000, "situacion": "- FV Santa Isabel (-->AES)", "responsable": "Esteban V", "pasos": "Firma de anexo de contrato", "unidades": ["PV O&M"], "prob": 70}, {"pais": "Chile", "cliente": "AEDILES TALINAY", "nivel": "BAJO", "estado": "Contactado", "moneda": "", "monto": "", "situacion": "No tienen más parques que operar ni contruir", "responsable": "Esteban V", "pasos": "", "unidades": ["Transversal"], "prob": 10}, {"pais": "Chile", "cliente": "Biwo Renovables", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Se realizó reunión presencial", "responsable": "Esteban V", "pasos": "Realizar seguimiento para ingresar a nuevas licitaciones", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "Copenhagen Infrastructure Partners (CIP)", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "- Ejecutando O&M Stand Alone 1GWh", "responsable": "Esteban V", "pasos": "Seguimiento comercial para crear nuevas oportunidades", "unidades": ["BESS", "PV O&M"], "prob": 20}, {"pais": "Chile", "cliente": "ENEL", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "- BOP Sol de Lila\n- O&M Valle del Sol\n- BOP y CU Guanchoi\n\n- Ofertando sinergia BOP y CU Sol de Lila\n- Canela I+II Contrato Wind", "responsable": "Esteban V", "pasos": "Seguimiento comercial", "unidades": ["ENG", "PV O&M", "WIND O&M"], "prob": 20}, {"pais": "Chile", "cliente": "OPDEnergy", "nivel": "MEDIO", "estado": "Reunión agendada", "moneda": "", "monto": "", "situacion": "- BOP SET La Estrella (WF)", "responsable": "Esteban V", "pasos": "En Agosto tendremos reunión presencial junto a Alex para evaluar nuevos servicios", "unidades": ["ENG"], "prob": 30}, {"pais": "Chile", "cliente": "SAFT", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "BESS La Cabaña (Enel) + Capacitación en Argentina + Service Partners", "responsable": "Esteban V", "pasos": "Seguimiento comercial", "unidades": ["BESS"], "prob": 20}, {"pais": "Chile", "cliente": "WiseEnergy / Nenergy", "nivel": "BAJO", "estado": "Sin contacto", "moneda": "", "monto": "", "situacion": "", "responsable": "Eduardo C", "pasos": "", "unidades": ["Transversal"], "prob": 5}, {"pais": "Chile", "cliente": "X-Elio", "nivel": "ALTO", "estado": "En negociación", "moneda": "CLP", "monto": 326000000, "situacion": "- O&M Uribe FV + BESS\n\n- En negociación O&M La Cruz\n- Cableado", "responsable": "Esteban V", "pasos": "Seguimiento comercial", "unidades": ["BESS", "ENG", "PV O&M"], "prob": 70}, {"pais": "Chile", "cliente": "WPD", "nivel": "MEDIO", "estado": "No contesta", "moneda": "", "monto": "", "situacion": "", "responsable": "Esteban V", "pasos": "", "unidades": ["Transversal"], "prob": 5}, {"pais": "Chile", "cliente": "Siemens Gamesa Renewable Energy", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Se realizó reunión presencial de servicios Wind junto a Alex", "responsable": "Esteban V", "pasos": "Seguimiento comercial", "unidades": ["WIND O&M"], "prob": 20}, {"pais": "Chile", "cliente": "CCE", "nivel": "MEDIO", "estado": "Sin contacto", "moneda": "", "monto": "", "situacion": "- FV La Huella", "responsable": "Esteban V", "pasos": "", "unidades": ["PV O&M"], "prob": 5}, {"pais": "Chile", "cliente": "Colbun", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "- O&M FV Ovejeria (PMGD)\n- O&M FV Diego de Almagro Sur\n- EOW Horizonte (finalizando)", "responsable": "Esteban V", "pasos": "Intentamos reunirnos pero no hubo mucho interés, hay que seguir insistiendo y hacer seguimiento comercial", "unidades": ["ENG", "PV O&M"], "prob": 20}, {"pais": "Chile", "cliente": "Sonnedix", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Se realizó reunión presencial de servicios", "responsable": "No aplica", "pasos": "Seguimiento comercial", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "EDP Renewables", "nivel": "MEDIO", "estado": "Sin contacto", "moneda": "", "monto": "", "situacion": "", "responsable": "Esteban V", "pasos": "", "unidades": ["Transversal"], "prob": 5}, {"pais": "Chile", "cliente": "CATL", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Service Partner", "responsable": "Esteban V", "pasos": "Seguimiento para coordinar una reunión presencial", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "Hitium", "nivel": "ALTO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Service Partner 1.6GW de O&M", "responsable": "Esteban V", "pasos": "Seguimiento para cotizar proyecto de 1.6GW", "unidades": ["PV O&M"], "prob": 20}, {"pais": "Chile", "cliente": "Sungrow", "nivel": "MEDIO", "estado": "Sin contacto", "moneda": "", "monto": "", "situacion": "Service Partner", "responsable": "Esteban V", "pasos": "Completar documentación enviada por Ramón", "unidades": ["Transversal"], "prob": 5}, {"pais": "Chile", "cliente": "Huawei", "nivel": "BAJO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Service Partner", "responsable": "Esteban V", "pasos": "Es complejo ser Service Partners debido a que piden exclusividad", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "Gotion", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Service Partner", "responsable": "Esteban V", "pasos": "Coordinar nueva hora de reunión", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "Verano Energy", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Se realizó reunión presencial de servicios", "responsable": "Esteban V", "pasos": "Seguimiento de licitación de proyectos en Colombia", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "Efragen", "nivel": "BAJO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "", "responsable": "Esteban V", "pasos": "Falta coordinar reunión presencial", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "Espinos", "nivel": "ALTO", "estado": "Ofertando", "moneda": "", "monto": "", "situacion": "1.2GW en NTP para 2026. Mitad BESS y mitad eólico.", "responsable": "Esteban V", "pasos": "Confeccionando oferta por 480MWhs", "unidades": ["BESS", "WIND O&M"], "prob": 50}, {"pais": "Chile", "cliente": "Nala", "nivel": "ALTO", "estado": "En negociación", "moneda": "USD", "monto": 859353, "situacion": "Preparando propuesta para inicio de servicio Agosto", "responsable": "Esteban V", "pasos": "Esperando feedback de la propuesta enviada", "unidades": ["Transversal"], "prob": 70}, {"pais": "Chile", "cliente": "Envision", "nivel": "MEDIO", "estado": "Contactado", "moneda": "", "monto": "", "situacion": "", "responsable": "Eduardo C", "pasos": "", "unidades": ["Transversal"], "prob": 10}, {"pais": "Chile", "cliente": "ENGIE", "nivel": "MEDIO", "estado": "No contesta", "moneda": "", "monto": "", "situacion": "", "responsable": "Esteban V", "pasos": "", "unidades": ["Transversal"], "prob": 5}, {"pais": "Chile", "cliente": "JINKO", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "", "responsable": "Esteban V", "pasos": "Reagendar reunión", "unidades": ["Transversal"], "prob": 20}, {"pais": "Chile", "cliente": "ELECNOR Chile", "nivel": "MEDIO", "estado": "En seguimiento", "moneda": "", "monto": "", "situacion": "Se realizó reunión presencial de servicios", "responsable": "Esteban V", "pasos": "Seguimiento comercial", "unidades": ["Transversal"], "prob": 20}, {"pais": "Perú", "cliente": "Yinson Renewables", "nivel": "ALTO", "estado": "En negociación", "moneda": "USD", "monto": 1320170, "situacion": "Licitando O&M BESS Matarani MMUSD3.2", "responsable": "Wenceslao", "pasos": "EN revisión de contrato", "unidades": ["BESS", "PV O&M"], "prob": 70}, {"pais": "Perú", "cliente": "ELECNOR Perú", "nivel": "ALTO", "estado": "Contactado", "moneda": "", "monto": "", "situacion": "", "responsable": "Esteban V", "pasos": "Seguimiento comercial", "unidades": ["Transversal"], "prob": 10}], "_stageprob": {"Sin contacto": 5, "Contactado": 10, "No contesta": 5, "En seguimiento": 20, "Reunión agendada": 30, "Ofertando": 50, "En negociación": 70}}</script>
+<script>
+const RAW=JSON.parse(document.getElementById('data').textContent);
+const PIPE=RAW['_pipeline'], STAGE_PROB=RAW['_stageprob'];
+const STORE_KEY='revergy_cmd_v1';
+let STATE=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
+STATE.track=STATE.track||{}; STATE.fx=STATE.fx||{CLP:950,EUR:0.92};
+function save(){localStorage.setItem(STORE_KEY,JSON.stringify(STATE));}
+const key=p=>p.pais+'|'+p.cliente;
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function num(x){const n=parseFloat(String(x).replace(/[^0-9.-]/g,''));return isNaN(n)?0:n;}
+const today=new Date();
+document.getElementById('stamp').textContent='Corte pipeline: jul 2026';
+
+function stBadge(v){const m={'En negociación':'st-neg','Ofertando':'st-of','En seguimiento':'st-seg','Contactado':'st-cont','Reunión agendada':'st-reu','Sin contacto':'st-sin','No contesta':'st-no'};return v?`<span class="badge ${m[v]||'st-cont'}">${v}</span>`:'';}
+function lvlBadge(v){return v?`<span class="badge lvl-${v}">${v}</span>`:'';}
+function fmtMoney(v,cur){const n=num(v);if(!n)return '<span class="mini">—</span>';return `<span class="money">${n.toLocaleString('es-CL')}</span> <span class="cur">${cur||''}</span>`;}
+function toUSD(monto,cur){const n=num(monto);if(!n)return 0;const fx=STATE.fx;if(cur==='USD')return n;if(cur==='CLP')return n/(fx.CLP||950);if(cur==='EUR')return n/(fx.EUR||0.92);return 0;}
+
+const TABS=[
+  {id:'mando',label:'⌘ Centro de Mando'},
+  {id:'pipeline',label:'Pipeline',count:PIPE.length},
+  {id:'contactos',label:'Contactos',count:RAW['Contactos'].slice(3).filter(r=>r.some(c=>c)).length},
+  {id:'calendario',label:'Calendario'},
+  {id:'briefing',label:'✉ Briefing'},
+];
+const tabsEl=document.getElementById('tabs');
+TABS.forEach((t,i)=>{const b=document.createElement('button');b.className='tab'+(i===0?' active':'');b.dataset.id=t.id;
+  b.innerHTML=t.label+(t.count!=null?`<span class="count">${t.count}</span>`:'');
+  b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('view-'+t.id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(t.id==='calendario'&&!calLoaded){calLoaded=true;loadCalendar();}};
+  tabsEl.appendChild(b);});
+function goTab(id){document.querySelector('.tab[data-id="'+id+'"]').click();}
+
+/* KPIs */
+function computeKPIs(){
+  const total=PIPE.length,neg=PIPE.filter(p=>p.estado==='En negociación').length,of=PIPE.filter(p=>p.estado==='Ofertando').length;
+  const conMonto=PIPE.filter(p=>num(p.monto)>0).length;let weighted=0;
+  PIPE.forEach(p=>{weighted+=toUSD(p.monto,p.moneda)*(p.prob/100);});
+  const alerts=computeAlerts().length;
+  return [
+    {v:total,l:'Clientes en pipeline',cls:'k-navy',hint:'Chile 39 · Perú 2'},
+    {v:neg,l:'En negociación',cls:'k-red',hint:'Foco de cierre'},
+    {v:of,l:'Ofertando',cls:'k-amber',hint:'Propuesta enviada'},
+    {v:'US$ '+(weighted/1e6).toFixed(2)+'M',l:'Forecast ponderado',cls:'k-green',hint:'Prob × monto ('+conMonto+' valorizados)'},
+    {v:alerts,l:'Alertas activas',cls:'k-red',hint:'Requieren acción'},
+  ];
+}
+function renderKPIs(){document.getElementById('kpiGrid').innerHTML=computeKPIs().map(k=>`<div class="kpi-card ${k.cls}"><div class="kpi-value">${k.v}</div><div class="kpi-label">${k.l}</div><div class="kpi-hint">${k.hint}</div></div>`).join('');}
+
+/* Alerts */
+function daysSince(dstr){if(!dstr)return null;const d=new Date(dstr);if(isNaN(d))return null;return Math.floor((today-d)/86400000);}
+function computeAlerts(){const a=[];PIPE.forEach(p=>{const t=STATE.track[key(p)]||{};const ds=daysSince(t.ultimo);
+  if(p.estado==='En seguimiento'&&!p.pasos)a.push({sev:'amber',c:p,m:`<b>${esc(p.cliente)}</b> lleva estado «En seguimiento» sin próximo paso definido.`});
+  if(p.nivel==='ALTO'&&num(p.monto)===0&&['En negociación','Ofertando'].includes(p.estado))a.push({sev:'red',c:p,m:`<b>${esc(p.cliente)}</b> es prioridad ALTA y ${p.estado.toLowerCase()} pero sin monto valorizado.`});
+  if(ds!==null&&ds>30)a.push({sev:'red',c:p,m:`<b>${esc(p.cliente)}</b> sin contacto hace ${ds} días.`});});return a;}
+function renderAlerts(){const al=computeAlerts();document.getElementById('alertCount').textContent=al.length+' activas';const body=document.getElementById('alertsBody');
+  if(!al.length){body.innerHTML='<div class="mini">Sin alertas. 🎉</div>';return;}
+  body.innerHTML=al.slice(0,12).map(x=>`<div class="alert-item"><div class="alert-dot ad-${x.sev}"></div><div><div class="alert-txt">${x.m}</div><div class="alert-meta">${esc(x.c.pais)} · ${esc(x.c.responsable||'sin responsable')} · <a onclick="openClient('${esc(x.c.pais)}','${esc(x.c.cliente).replace(/'/g,"\\'")}')" style="cursor:pointer">ver ficha →</a></div></div></div>`).join('')+(al.length>12?`<div class="mini" style="margin-top:8px">+ ${al.length-12} alertas más</div>`:'');}
+
+/* Forecast */
+function renderForecast(){const byCur={USD:{n:0,tot:0,w:0},CLP:{n:0,tot:0,w:0},EUR:{n:0,tot:0,w:0}};let totUSD=0,wUSD=0;
+  PIPE.forEach(p=>{const m=num(p.monto);if(!m)return;const c=p.moneda||'USD';if(!byCur[c])byCur[c]={n:0,tot:0,w:0};byCur[c].n++;byCur[c].tot+=m;byCur[c].w+=m*p.prob/100;const u=toUSD(p.monto,p.moneda);totUSD+=u;wUSD+=u*p.prob/100;});
+  let html='<table class="dist-table"><thead><tr><th>Moneda</th><th>N°</th><th>Monto</th><th>USD base</th><th>Ponder. USD</th></tr></thead><tbody>';
+  ['USD','CLP','EUR'].forEach(c=>{const b=byCur[c];const uB=(c==='USD'?b.tot:(c==='CLP'?b.tot/(STATE.fx.CLP||950):b.tot/(STATE.fx.EUR||0.92)));const uW=(c==='USD'?b.w:(c==='CLP'?b.w/(STATE.fx.CLP||950):b.w/(STATE.fx.EUR||0.92)));
+    html+=`<tr><td><span class="cur" style="font-size:12px">${c}</span></td><td>${b.n}</td><td class="money">${b.tot.toLocaleString('es-CL')}</td><td class="money">${Math.round(uB).toLocaleString('es-CL')}</td><td class="money">${Math.round(uW).toLocaleString('es-CL')}</td></tr>`;});
+  html+=`<tr style="border-top:2px solid var(--line)"><td><b>Total USD</b></td><td></td><td></td><td class="money">${Math.round(totUSD).toLocaleString('es-CL')}</td><td class="money" style="color:var(--green)">${Math.round(wUSD).toLocaleString('es-CL')}</td></tr></tbody></table>`;
+  document.getElementById('forecastBody').innerHTML=html;}
+document.getElementById('fxCLP').value=STATE.fx.CLP;document.getElementById('fxEUR').value=STATE.fx.EUR;
+['fxCLP','fxEUR'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{STATE.fx[id==='fxCLP'?'CLP':'EUR']=parseFloat(e.target.value)||0;save();renderForecast();renderKPIs();}));
+
+/* Charts */
+const navy='#466294',amber='#d68a2c',green='#3f8f6b',lightn='#7791b8';
+const STAGES=['Sin contacto','Contactado','No contesta','Reunión agendada','En seguimiento','Ofertando','En negociación'];
+function cnt(fn){const m={};PIPE.forEach(p=>{const k=fn(p);if(k==null)return;(Array.isArray(k)?k:[k]).forEach(kk=>m[kk]=(m[kk]||0)+1);});return m;}
+const COPT={responsive:true,maintainAspectRatio:false};
+function drawCharts(){
+  const estByC={};PIPE.forEach(p=>{estByC[p.estado]=estByC[p.estado]||{Chile:0,'Perú':0};estByC[p.estado][p.pais]++;});
+  new Chart(document.getElementById('chartFunnel'),{type:'bar',data:{labels:STAGES,datasets:[{label:'Chile',data:STAGES.map(s=>(estByC[s]||{}).Chile||0),backgroundColor:navy},{label:'Perú',data:STAGES.map(s=>(estByC[s]||{})['Perú']||0),backgroundColor:amber}]},options:Object.assign({},COPT,{indexAxis:'y',plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true,ticks:{precision:0}},y:{stacked:true}}})});
+  const niv=cnt(p=>p.nivel);
+  new Chart(document.getElementById('chartNivel'),{type:'doughnut',data:{labels:['ALTO','MEDIO','BAJO'],datasets:[{data:['ALTO','MEDIO','BAJO'].map(k=>niv[k]||0),backgroundColor:[green,amber,lightn],borderWidth:2,borderColor:'#fff'}]},options:Object.assign({},COPT,{cutout:'56%',plugins:{legend:{position:'bottom'}}})});
+  const resp=cnt(p=>p.responsable||'Sin asignar');
+  new Chart(document.getElementById('chartResp'),{type:'bar',data:{labels:Object.keys(resp),datasets:[{data:Object.values(resp),backgroundColor:navy}]},options:Object.assign({},COPT,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{precision:0}}}})});
+  const uni=cnt(p=>p.unidades);
+  new Chart(document.getElementById('chartUnidad'),{type:'bar',data:{labels:Object.keys(uni),datasets:[{data:Object.values(uni),backgroundColor:amber}]},options:Object.assign({},COPT,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{precision:0}}}})});
+}
+function renderEstadoTable(){const estByC={};PIPE.forEach(p=>{estByC[p.estado]=estByC[p.estado]||{Chile:0,'Perú':0};estByC[p.estado][p.pais]++;});
+  const rows=STAGES.map(s=>({est:s,ch:(estByC[s]||{}).Chile||0,pe:(estByC[s]||{})['Perú']||0}));const mx=Math.max(...rows.map(r=>r.ch+r.pe),1);
+  document.getElementById('tblEstado').innerHTML=`<thead><tr><th>Estado</th><th>Chile</th><th>Perú</th><th>Total</th><th style="width:32%"></th></tr></thead><tbody>`+rows.map(r=>{const t=r.ch+r.pe;return `<tr><td>${stBadge(r.est)}</td><td>${r.ch}</td><td>${r.pe}</td><td><b>${t}</b></td><td><div class="dist-bar" style="width:${(t/mx*100).toFixed(0)}%"></div></td></tr>`;}).join('')+`</tbody>`;}
+
+/* Pipeline */
+const F={pais:'',nivel:'',estado:'',resp:'',unidad:'',q:'',sort:'cliente',dir:1,quick:''};
+function fillSel(id,vals){const s=document.getElementById(id);vals.forEach(v=>s.innerHTML+=`<option>${esc(v)}</option>`);}
+function uniq(fn){return [...new Set(PIPE.map(fn).flat().filter(Boolean))];}
+fillSel('f-pais',uniq(p=>p.pais));fillSel('f-nivel',['ALTO','MEDIO','BAJO']);fillSel('f-estado',STAGES.filter(s=>PIPE.some(p=>p.estado===s)));fillSel('f-resp',uniq(p=>p.responsable));fillSel('f-unidad',uniq(p=>p.unidades));
+const QUICK=[{k:'neg',l:'En negociación',f:p=>p.estado==='En negociación'},{k:'of',l:'Ofertando',f:p=>p.estado==='Ofertando'},{k:'alto',l:'Prioridad ALTA',f:p=>p.nivel==='ALTO'},{k:'monto',l:'Con monto',f:p=>num(p.monto)>0},{k:'cold',l:'Sin próximo paso',f:p=>!p.pasos}];
+document.getElementById('quickChips').innerHTML=QUICK.map(q=>`<span class="chip" data-k="${q.k}">${q.l}</span>`).join('');
+document.querySelectorAll('#quickChips .chip').forEach(ch=>ch.onclick=()=>{F.quick=F.quick===ch.dataset.k?'':ch.dataset.k;document.querySelectorAll('#quickChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.k===F.quick));renderPipe();});
+function pipeFiltered(){let rows=PIPE.filter(p=>{if(F.pais&&p.pais!==F.pais)return false;if(F.nivel&&p.nivel!==F.nivel)return false;if(F.estado&&p.estado!==F.estado)return false;if(F.resp&&p.responsable!==F.resp)return false;if(F.unidad&&!p.unidades.includes(F.unidad))return false;if(F.quick){const q=QUICK.find(x=>x.k===F.quick);if(q&&!q.f(p))return false;}if(F.q){const t=(p.cliente+' '+p.situacion+' '+p.pasos+' '+p.responsable+' '+p.estado+' '+p.unidades.join(' ')).toLowerCase();if(!t.includes(F.q))return false;}return true;});
+  const dir=F.dir;rows.sort((a,b)=>{let x,y;if(F.sort==='monto'){x=toUSD(a.monto,a.moneda);y=toUSD(b.monto,b.moneda);}else if(F.sort==='prob'){x=a.prob;y=b.prob;}else{x=(a[F.sort]||'').toString().toLowerCase();y=(b[F.sort]||'').toString().toLowerCase();}return x<y?-dir:x>y?dir:0;});return rows;}
+function daysBadge(dstr){const ds=daysSince(dstr);if(ds===null)return '<span class="days-badge days-none">sin fecha</span>';const cls=ds>30?'days-bad':ds>14?'days-warn':'days-ok';return `<span class="days-badge ${cls}">${ds} d</span>`;}
+function renderPipe(){const rows=pipeFiltered();const heads=[['cliente','Cliente'],['pais','País'],['nivel','Nivel'],['estado','Estado'],['unidades','Unidad'],['monto','Monto'],['prob','Prob.'],['seg','Seguimiento (editable)']];
+  let html='<thead><tr>'+heads.map(h=>`<th data-s="${h[0]}">${h[1]}${F.sort===h[0]?(F.dir>0?' ▲':' ▼'):''}</th>`).join('')+'<th>Situación / próximo paso</th></tr></thead><tbody>';
+  rows.forEach(p=>{const t=STATE.track[key(p)]||{};const cold=!p.pasos;html+=`<tr class="${cold?'cold':''}"><td class="c-name" onclick="openClient('${esc(p.pais)}','${esc(p.cliente).replace(/'/g,"\\'")}')">${esc(p.cliente)}</td><td class="mini">${esc(p.pais)}</td><td>${lvlBadge(p.nivel)}</td><td>${stBadge(p.estado)}</td><td>${p.unidades.map(u=>`<span class="un-tag">${esc(u)}</span>`).join('')}</td><td>${fmtMoney(p.monto,p.moneda)}</td><td><div class="prob-wrap"><div class="prob-track"><div class="prob-fill" style="width:${p.prob}%"></div></div><span class="prob-num">${p.prob}%</span></div></td><td><input class="edit-in" type="date" data-k="${esc(key(p))}" data-f="ultimo" value="${t.ultimo||''}" title="Último contacto">${daysBadge(t.ultimo)}<input class="edit-in" type="date" data-k="${esc(key(p))}" data-f="proximo" value="${t.proximo||''}" title="Próximo hito" style="margin-top:4px"></td><td class="multiline">${esc(p.situacion||'—')}${p.pasos?`\n▸ ${esc(p.pasos)}`:''}</td></tr>`;});
+  html+='</tbody>';if(!rows.length)html+=`<tbody><tr><td colspan="9" style="text-align:center;color:#8a97a5;padding:26px">Sin resultados con estos filtros</td></tr></tbody>`;
+  const tbl=document.getElementById('tbl-pipeline');tbl.innerHTML=html;
+  tbl.querySelectorAll('th[data-s]').forEach(th=>th.onclick=()=>{const s=th.dataset.s;if(F.sort===s)F.dir*=-1;else{F.sort=s;F.dir=1;}renderPipe();});
+  tbl.querySelectorAll('.edit-in').forEach(inp=>inp.addEventListener('change',e=>{const k=e.target.dataset.k,f=e.target.dataset.f;STATE.track[k]=STATE.track[k]||{};STATE.track[k][f]=e.target.value;save();renderPipe();renderAlerts();renderKPIs();renderUpcoming();}));}
+document.getElementById('p-search').addEventListener('input',e=>{F.q=e.target.value.toLowerCase();renderPipe();});
+[['f-pais','pais'],['f-nivel','nivel'],['f-estado','estado'],['f-resp','resp'],['f-unidad','unidad']].forEach(([id,f])=>document.getElementById(id).addEventListener('change',e=>{F[f]=e.target.value;renderPipe();}));
+document.getElementById('btnClear').onclick=()=>{F.pais=F.nivel=F.estado=F.resp=F.unidad=F.q=F.quick='';['f-pais','f-nivel','f-estado','f-resp','f-unidad'].forEach(id=>document.getElementById(id).value='');document.getElementById('p-search').value='';document.querySelectorAll('#quickChips .chip').forEach(c=>c.classList.remove('active'));renderPipe();};
+
+/* Client modal */
+function openClient(pais,cliente){const p=PIPE.find(x=>x.pais===pais&&x.cliente===cliente);if(!p)return;const t=STATE.track[key(p)]||{};const contacts=RAW['Contactos'].slice(3).filter(r=>r[1]===cliente);
+  document.getElementById('mTitle').textContent=cliente;document.getElementById('mSub').innerHTML=`${esc(pais)} · ${p.nivel} · ${p.estado} · ${p.unidades.join(', ')}`;
+  let body=`<div class="mfield"><label>Situación y oportunidades</label><div class="mval">${esc(p.situacion||'—')}</div></div><div class="mfield"><label>Próximos pasos</label><div class="mval">${esc(p.pasos||'—')}</div></div><div class="mfield"><label>Monto · Probabilidad</label><div class="mval">${p.monto?num(p.monto).toLocaleString('es-CL')+' '+p.moneda:'Sin valorizar'} · ${p.prob}% (según etapa)</div></div><div class="mfield"><label>Responsable</label><div class="mval">${esc(p.responsable||'—')}</div></div><div class="mfield"><label>Último contacto</label><input type="date" id="mUlt" value="${t.ultimo||''}"></div><div class="mfield"><label>Próximo hito</label><input type="date" id="mProx" value="${t.proximo||''}"></div><div class="mfield"><label>Notas de seguimiento</label><textarea id="mNotas" placeholder="Escribe notas…">${esc(t.notas||'')}</textarea></div>`;
+  if(contacts.length){body+=`<div class="mfield"><label>Contactos (${contacts.length})</label><div>`+contacts.map(c=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${esc(c[2]||'—')}</b> <span class="mini">${esc(c[3]||'')}</span><br>${c[4]?`<a href="tel:${String(c[4]).replace(/\s/g,'')}">${esc(c[4])}</a> · `:''}${c[5]?`<a href="mailto:${esc(c[5])}">${esc(c[5])}</a>`:''}</div>`).join('')+`</div></div>`;}
+  else body+=`<div class="mfield"><label>Contactos</label><div class="mini">Sin contactos registrados.</div></div>`;
+  document.getElementById('mBody').innerHTML=body;const k=key(p);
+  document.getElementById('mUlt').addEventListener('change',e=>{STATE.track[k]=STATE.track[k]||{};STATE.track[k].ultimo=e.target.value;save();afterEdit();});
+  document.getElementById('mProx').addEventListener('change',e=>{STATE.track[k]=STATE.track[k]||{};STATE.track[k].proximo=e.target.value;save();afterEdit();});
+  document.getElementById('mNotas').addEventListener('input',e=>{STATE.track[k]=STATE.track[k]||{};STATE.track[k].notas=e.target.value;save();});
+  document.getElementById('modalBg').classList.add('open');}
+function afterEdit(){renderPipe();renderAlerts();renderKPIs();renderUpcoming();}
+document.getElementById('modalClose').onclick=()=>document.getElementById('modalBg').classList.remove('open');
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')e.currentTarget.classList.remove('open');});
+
+/* Contactos */
+(function(){const rows=RAW['Contactos'].slice(3).filter(r=>r.some(c=>c));
+  fillSel('f-cont-pais',[...new Set(rows.map(r=>r[0]).filter(Boolean))]);fillSel('f-cont-cliente',[...new Set(rows.map(r=>r[1]).filter(Boolean))].sort());
+  const tbl=document.getElementById('tbl-cont');
+  window.renderCont=function(){const q=(document.getElementById('s-cont').value||'').toLowerCase();const fp=document.getElementById('f-cont-pais').value,fc=document.getElementById('f-cont-cliente').value;
+    const shown=rows.filter(r=>{const hay=r.join(' ').toLowerCase();return(!q||hay.includes(q))&&(!fp||r[0]===fp)&&(!fc||r[1]===fc);});
+    document.getElementById('cont-count').textContent=shown.length+' contactos';
+    tbl.innerHTML=`<thead><tr><th>País</th><th>Cliente</th><th>Nombre</th><th>Cargo</th><th>Teléfono</th><th>Email</th></tr></thead><tbody>`+shown.map(r=>{const tel=r[4]?`<a href="tel:${String(r[4]).replace(/\s/g,'')}">${esc(r[4])}</a>`:'';const em=r[5]?`<a href="mailto:${esc(r[5])}">${esc(r[5])}</a>`:'';return `<tr><td class="mini">${esc(r[0]||'')}</td><td class="c-name" onclick="openClient('${esc(r[0])}','${esc(r[1]||'').replace(/'/g,"\\'")}')">${esc(r[1]||'')}</td><td>${esc(r[2]||'')}</td><td class="mini">${esc(r[3]||'')}</td><td>${tel}</td><td>${em}</td></tr>`;}).join('')+`</tbody>`;
+    if(!shown.length)tbl.innerHTML+=`<tbody><tr><td colspan="6" style="text-align:center;color:#8a97a5;padding:24px">Sin resultados</td></tr></tbody>`;};
+  ['s-cont','f-cont-pais','f-cont-cliente'].forEach(id=>document.getElementById(id).addEventListener(id==='s-cont'?'input':'change',renderCont));renderCont();})();
+
+/* Upcoming milestones */
+function renderUpcoming(){const items=PIPE.map(p=>({p,t:STATE.track[key(p)]||{}})).filter(x=>x.t.proximo).sort((a,b)=>a.t.proximo<b.t.proximo?-1:1);const el=document.getElementById('upcomingBody');
+  if(!items.length){el.innerHTML='Registra «próximo hito» en la pestaña Pipeline para vincular aquí reuniones y fechas objetivo por cliente.';return;}
+  el.innerHTML=items.map(x=>{const ds=daysSince(x.t.proximo);const rel=ds===null?'':ds<0?`en ${-ds} d`:ds===0?'hoy':`hace ${ds} d`;return `<div class="alert-item"><div class="alert-dot ad-navy"></div><div><div class="alert-txt"><b>${esc(x.p.cliente)}</b> — ${x.t.proximo} <span class="mini">(${rel})</span></div><div class="alert-meta">${esc(x.p.pais)} · ${esc(x.p.estado)} · <a onclick="openClient('${esc(x.p.pais)}','${esc(x.p.cliente).replace(/'/g,"\\'")}')" style="cursor:pointer">ver →</a></div></div></div>`;}).join('');}
+
+/* ================= CALENDARIO — espejo Outlook en vivo ================= */
+const CAL_TOOL='mcp__de2675c9-548c-4e17-a137-f0ecca2add32__outlook_calendar_search';
+let calLoaded=false, weekOffset=0, calEvents=[];
+const DAYNAMES=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const MONTHS=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function mondayOf(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x;}
+function isoDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function eventInstant(dt,tz){if(!dt)return null;let s=dt.replace(/\.\d+$/,'');if(tz==='UTC'||/utc/i.test(tz||'')||!tz)return new Date(s+'Z');return new Date(s);}
+function extractObjects(txt){const out=[];let depth=0,start=-1,inStr=false,escp=false;for(let i=0;i<txt.length;i++){const c=txt[i];if(inStr){if(escp)escp=false;else if(c==='\\')escp=true;else if(c==='"')inStr=false;continue;}if(c==='"'){inStr=true;continue;}if(c==='{'){if(depth===0)start=i;depth++;}else if(c==='}'){depth--;if(depth===0&&start>=0){try{out.push(JSON.parse(txt.slice(start,i+1)));}catch(e){}start=-1;}}}return out;}
+function parseEvents(r){let sc=r&&r.structuredContent;let arr=null;
+  if(sc){if(Array.isArray(sc))arr=sc;else if(Array.isArray(sc.events))arr=sc.events;else if(Array.isArray(sc.results))arr=sc.results;else if(Array.isArray(sc.items))arr=sc.items;}
+  if(!arr){let txt='';if(r&&r.content&&r.content[0]&&r.content[0].text)txt=r.content[0].text;else if(typeof sc==='string')txt=sc;else if(sc)txt=JSON.stringify(sc);arr=extractObjects(txt);}
+  return (arr||[]).filter(e=>e&&e.start&&e.start.dateTime&&!e.isCancelled);}
+function setCalStatus(cls,txt){document.getElementById('calDot').className='live-dot '+cls;document.getElementById('calStatus').textContent=txt;}
+
+async function loadCalendar(){
+  const base=mondayOf(new Date());base.setDate(base.getDate()+weekOffset*7);
+  const end=new Date(base);end.setDate(end.getDate()+7);
+  document.getElementById('calRange').textContent=base.getDate()+' '+MONTHS[base.getMonth()]+' – '+new Date(end-1).getDate()+' '+MONTHS[new Date(end-1).getMonth()]+' '+base.getFullYear();
+  setCalStatus('load','Cargando desde Outlook…');
+  if(!window.cowork||!window.cowork.callMcpTool){setCalStatus('err','Abre este panel dentro de Claude/Cowork para ver tu calendario en vivo.');document.getElementById('calGrid').innerHTML='<div class="cal-empty">El calendario en vivo requiere el conector de Outlook, disponible al abrir este artifact dentro de Claude.</div>';return;}
+  try{
+    const r=await window.cowork.callMcpTool(CAL_TOOL,{query:'*',afterDateTime:isoDate(base),beforeDateTime:isoDate(end),order:'oldest',limit:25});
+    if(r&&r.isError)throw new Error((r.content&&r.content[0]&&r.content[0].text)||'error');
+    calEvents=parseEvents(r);
+    setCalStatus('','En vivo · '+calEvents.length+' eventos');
+    renderWeek(base,calEvents);
+  }catch(e){setCalStatus('err','No se pudo leer el calendario');document.getElementById('calGrid').innerHTML='<div class="cal-empty">No se pudo cargar el calendario de Outlook.<br><span class="mini">'+esc(e.message||e)+'</span></div>';}
+}
+function renderWeek(monday,events){
+  const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(d.getDate()+i);days.push(d);}
+  const byDay=days.map(()=>({timed:[],allday:[]}));
+  events.forEach(ev=>{const tz=ev.start.timeZone;const s=eventInstant(ev.start.dateTime,tz);const e=eventInstant(ev.end&&ev.end.dateTime,ev.end&&ev.end.timeZone)||new Date(s.getTime()+3600000);
+    const di=Math.floor((new Date(s.getFullYear(),s.getMonth(),s.getDate())-new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()))/86400000);
+    if(di<0||di>6)return;ev._s=s;ev._e=e;if(ev.isAllDay)byDay[di].allday.push(ev);else byDay[di].timed.push(ev);});
+  let minH=8,maxH=19;events.forEach(ev=>{if(ev.isAllDay||!ev._s)return;minH=Math.min(minH,ev._s.getHours());maxH=Math.max(maxH,ev._e.getHours()+(ev._e.getMinutes()>0?1:0));});
+  minH=Math.max(0,minH);maxH=Math.min(24,Math.max(maxH,minH+4));const HH=44;
+  const todayStr=isoDate(new Date());
+  let html='<div class="wk"><div class="wk-times"><div class="th"></div>';
+  for(let h=minH;h<maxH;h++)html+=`<div class="wk-hr">${String(h).padStart(2,'0')}:00</div>`;
+  html+='</div>';
+  days.forEach((d,i)=>{const isToday=isoDate(d)===todayStr;
+    html+=`<div class="wk-day"><div class="wk-dayhead ${isToday?'today':''}"><div class="dn">${DAYNAMES[i]}</div><div class="dd">${d.getDate()}</div></div>`;
+    // all-day band
+    html+='<div class="wk-allday">'+byDay[i].allday.map((ev,ix)=>`<span class="allday-ev" onclick="openEvent(${events.indexOf(ev)})">${esc(ev.subject||'(sin título)')}</span>`).join('')+'</div>';
+    // timed column
+    html+=`<div class="wk-col" style="height:${(maxH-minH)*HH}px">`;
+    for(let h=minH;h<maxH;h++)html+=`<div class="wk-line" style="top:${(h-minH)*HH}px"></div>`;
+    // lane layout
+    const evs=byDay[i].timed.slice().sort((a,b)=>a._s-b._s);const lanes=[];
+    evs.forEach(ev=>{let placed=false;for(let l=0;l<lanes.length;l++){if(lanes[l]<=ev._s){ev._lane=l;lanes[l]=ev._e;placed=true;break;}}if(!placed){ev._lane=lanes.length;lanes.push(ev._e);}});
+    const nl=Math.max(1,lanes.length);
+    evs.forEach(ev=>{const top=((ev._s.getHours()+ev._s.getMinutes()/60)-minH)*HH;const hgt=Math.max(20,((ev._e-ev._s)/3600000)*HH-2);const w=100/nl;const left=ev._lane*w;
+      const tstr=ev._s.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      html+=`<div class="wk-ev ${ev.isOrganizer?'org':''}" style="top:${top}px;height:${hgt}px;left:${left}%;width:calc(${w}% - 4px)" onclick="openEvent(${events.indexOf(ev)})"><div class="evt-t">${esc(ev.subject||'(sin título)')}</div><div class="evt-time">${tstr}</div></div>`;});
+    html+='</div></div>';});
+  html+='</div>';
+  document.getElementById('calGrid').innerHTML=html;
+}
+function openEvent(idx){const ev=calEvents[idx];if(!ev)return;const s=ev._s,e=ev._e;
+  const fmt=d=>d?d.toLocaleString('es-CL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}):'';
+  document.getElementById('mTitle').textContent=ev.subject||'(sin título)';
+  document.getElementById('mSub').innerHTML=(ev.isOrganizer?'Organizas tú':'Invitado')+(ev.showAs?' · '+ev.showAs:'');
+  const join=(ev.location&&/teams/i.test(ev.location))||(ev.summary&&ev.summary.match(/https:\/\/teams\.microsoft\.com\/\S+/));
+  const teamsUrl=ev.summary&&(ev.summary.match(/https:\/\/teams\.microsoft\.com\/\S+/)||[])[0];
+  let body=`<div class="mfield"><label>Cuándo</label><div class="mval">${esc(fmt(s))} — ${esc(e?e.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}):'')} <span class="mini">(hora local)</span></div></div>`;
+  if(ev.location)body+=`<div class="mfield"><label>Dónde</label><div class="mval">${esc(ev.location)}</div></div>`;
+  body+=`<div class="mfield"><label>Organizador</label><div class="mval">${esc(ev.organizer||'—')}</div></div>`;
+  if(ev.attendees&&ev.attendees.length)body+=`<div class="mfield"><label>Asistentes (${ev.attendees.length})</label><div class="mval">${ev.attendees.map(a=>esc(a)).join('<br>')}</div></div>`;
+  if(teamsUrl)body+=`<a class="join-btn" href="${esc(teamsUrl)}" target="_blank" rel="noopener">Unirse a Teams ↗</a> `;
+  if(ev.webLink)body+=`<a class="join-btn" style="background:var(--navy-light)" href="${esc(ev.webLink)}" target="_blank" rel="noopener">Abrir en Outlook ↗</a>`;
+  document.getElementById('mBody').innerHTML=body;document.getElementById('modalBg').classList.add('open');}
+document.getElementById('calPrev').onclick=()=>{weekOffset--;loadCalendar();};
+document.getElementById('calNext').onclick=()=>{weekOffset++;loadCalendar();};
+document.getElementById('calToday').onclick=()=>{weekOffset=0;loadCalendar();};
+
+/* Owner name */
+(async function(){try{if(window.cowork&&window.cowork.callMcpTool){const r=await window.cowork.callMcpTool('mcp__de2675c9-548c-4e17-a137-f0ecca2add32__get_me',{});let txt=(r.content&&r.content[0]&&r.content[0].text)||'';let o=r.structuredContent||(txt?JSON.parse(txt):null);if(o&&(o.mail||o.displayName))document.getElementById('calOwner').textContent=o.displayName||o.mail;}}catch(e){}})();
+
+/* Export / Import / CSV */
+function pad2(n){return String(n).padStart(2,'0');}
+function stampId(){const d=new Date();return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate());}
+function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function exportState(){download('revergy_seguimiento_'+stampId()+'.json',new Blob([JSON.stringify({_app:'Revergy Centro de Mando',_version:1,_exported:new Date().toISOString(),track:STATE.track,fx:STATE.fx,dashUrl:STATE.dashUrl||''},null,2)],{type:'application/json'}));}
+function importState(file){const r=new FileReader();r.onload=e=>{try{const obj=JSON.parse(e.target.result);if(!obj||typeof obj!=='object')throw new Error('formato');STATE.track=Object.assign({},STATE.track,obj.track||{});if(obj.fx)STATE.fx=Object.assign({},STATE.fx,obj.fx);if(obj.dashUrl!==undefined){STATE.dashUrl=obj.dashUrl;const di=document.getElementById('dashUrl');if(di)di.value=STATE.dashUrl||'';}save();document.getElementById('fxCLP').value=STATE.fx.CLP;document.getElementById('fxEUR').value=STATE.fx.EUR;renderKPIs();renderForecast();renderAlerts();renderPipe();renderUpcoming();alert('✓ Seguimiento importado ('+Object.keys(obj.track||{}).length+' clientes con datos).');}catch(err){alert('Archivo no válido: '+err.message);}};r.readAsText(file);}
+function csvCell(s){return '"'+String(s==null?'':s).replace(/"/g,'""').replace(/\r?\n/g,' ')+'"';}
+function exportCSV(){const rows=pipeFiltered();const head=['Pais','Cliente','Nivel','Estado','Unidades','Moneda','Monto','Prob%','UltimoContacto','ProximoHito','Situacion','ProximosPasos','Notas'];const lines=[head.join(',')];rows.forEach(p=>{const t=STATE.track[key(p)]||{};lines.push([p.pais,p.cliente,p.nivel,p.estado,p.unidades.join('|'),p.moneda,p.monto,p.prob,t.ultimo||'',t.proximo||'',p.situacion,p.pasos,t.notas||''].map(csvCell).join(','));});download('revergy_pipeline_'+stampId()+'.csv',new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'}));}
+document.getElementById('btnExport').onclick=exportState;
+document.getElementById('btnImport').onclick=()=>document.getElementById('importFile').click();
+document.getElementById('importFile').addEventListener('change',e=>{if(e.target.files[0])importState(e.target.files[0]);e.target.value='';});
+document.getElementById('btnCSV').onclick=exportCSV;
+document.getElementById('globalSearch').addEventListener('input',e=>{const v=e.target.value;goTab('pipeline');F.q=v.toLowerCase();document.getElementById('p-search').value=v;renderPipe();});
+
+/* ================= Briefing instantáneo ================= */
+async function fetchEventsRange(after,before){
+  if(!window.cowork||!window.cowork.callMcpTool)return [];
+  try{const r=await window.cowork.callMcpTool(CAL_TOOL,{query:'*',afterDateTime:isoDate(after),beforeDateTime:isoDate(before),order:'oldest',limit:25});
+    return parseEvents(r).map(ev=>{const s=eventInstant(ev.start.dateTime,ev.start.timeZone);const e=eventInstant(ev.end&&ev.end.dateTime,ev.end&&ev.end.timeZone);
+      return {asunto:ev.subject,cuando:s?s.toLocaleString('es-CL',{weekday:'long',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'',organizador:ev.organizer,organizasTu:!!ev.isOrganizer,asistentes:ev.attendees||[]};});
+  }catch(e){return [];}
+}
+function briefSetStatus(t){document.getElementById('briefStatus').textContent=t;}
+async function generateBriefing(){
+  const btn=document.getElementById('btnGenBrief');
+  if(!window.cowork||!window.cowork.askClaude){briefSetStatus('Abre este panel dentro de Claude/Cowork para generar el briefing con IA.');return;}
+  btn.disabled=true;document.getElementById('btnRegen').style.display='none';document.getElementById('btnCopyBrief').style.display='none';
+  briefSetStatus('Leyendo tu calendario de Outlook…');
+  const now=new Date();
+  const lwStart=new Date(now);lwStart.setDate(lwStart.getDate()-7);
+  const nwEnd=new Date(now);nwEnd.setDate(nwEnd.getDate()+7);
+  const [semanaPasada,proximaSemana]=await Promise.all([fetchEventsRange(lwStart,now),fetchEventsRange(now,nwEnd)]);
+  briefSetStatus('Redactando la inteligencia comercial…');
+  const pipeForAI=PIPE.map(p=>{const t=STATE.track[key(p)]||{};return {cliente:p.cliente,pais:p.pais,nivel:p.nivel,estado:p.estado,moneda:p.moneda,monto:p.monto,prob_cierre:p.prob,unidades:p.unidades,situacion:p.situacion,proximos_pasos:p.pasos,responsable:p.responsable,ultimo_contacto:t.ultimo||'',proximo_hito:t.proximo||'',notas:t.notas||''};});
+  const fechaStr=now.toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});
+  const prompt=`Eres el analista comercial de Esteban Vazquez (Director de Desarrollo de Negocios, Revergy SpA — O&M e ingenieria para activos renovables PV/Wind/BESS en Chile y Peru). Hoy es ${fechaStr}. Redacta un CORREO DE INTELIGENCIA COMERCIAL breve, concreto y escaneable en 30 segundos. Espanol, tono ejecutivo. FORMATO ESTRICTO:
+- Maximo ~220 palabras en total. Nada de relleno, saludos ni explicaciones largas: solo señal.
+- Cada seccion inicia con "## " (doble almohadilla + espacio) seguida del titulo.
+- Vinetas con "• ", UNA idea por linea, frases cortas.
+- PROHIBIDO usar asteriscos (* o **) o markdown de negrita; si necesitas resaltar, usa comillas «».
+Datos: (1) pipeline con fechas/notas, (2) reuniones Outlook semana pasada, (3) reuniones Outlook proxima semana.
+ESTRUCTURA EXACTA:
+Asunto: Inteligencia comercial Revergy — Semana del [dd] al [dd] de [mes]
+## En foco
+(3 bullets: las 3 prioridades del negocio, cada una con cliente y responsable)
+## Semana pasada
+(2-4 bullets basados SOLO en reuniones reales del bloque 2; si un cliente en negociacion no tuvo actividad, 1 bullet marcandolo pendiente)
+## Esta semana
+(3-5 bullets de foco mezclando etapa —cerrar/ofertar/reactivar— y prioridad; tips concretos y no obvios: sinergias, ampliar contratos vigentes, apalancar cierres recientes, Service Partners, orden de firmas)
+## Agenda
+(reuniones ya agendadas del bloque 3, una linea c/u: dia/hora — cliente o tema)
+## Acciones
+(max 5, formato "Cliente — accion — Responsable")
+## Riesgos
+(1-2 bullets: clientes que se enfrian o contratos en riesgo)
+Devuelve SOLO el correo.`;
+  try{
+    const res=await window.cowork.askClaude(prompt,[{pipeline:pipeForAI},{reuniones_semana_pasada:semanaPasada},{reuniones_proxima_semana:proximaSemana}]);
+    let text=typeof res==='string'?res:(res&&(res.text||res.content||res.output||res.response||res.message))||'';
+    if(typeof text!=='string')text=JSON.stringify(text,null,2);
+    text=text.trim();
+    if(STATE.dashUrl){const ln=text.split(/\n/);const i=ln.findIndex(x=>/^asunto\s*:/i.test(x.trim()));const link='Centro de Mando (dashboard): '+STATE.dashUrl;if(i>=0)ln.splice(i+1,0,link);else ln.unshift(link);text=ln.join('\n');}
+    const out=document.getElementById('briefOut');out.innerHTML=renderBrief(text);out.style.display='block';
+    document.getElementById('btnCopyBrief').style.display='';document.getElementById('btnRegen').style.display='';
+    briefSetStatus('Generado '+now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})+' · '+semanaPasada.length+' reuniones prev. · '+proximaSemana.length+' prox.');
+  }catch(e){briefSetStatus('No se pudo generar: '+(e.message||e));}
+  btn.disabled=false;
+}
+function renderBrief(raw){
+  const lines=String(raw||'').trim().split(/\r?\n/);const html=[];const clean=[];
+  lines.forEach(line=>{
+    let l=line.trim();
+    const isBullet=/^([•\-\*]|\d+[.)])\s/.test(l);
+    const isHead=/^##\s?/.test(l);
+    l=l.replace(/\*\*([^*]+)\*\*/g,'«$1»').replace(/`([^`]+)`/g,'$1');
+    if(isBullet)l=l.replace(/^[\-\*]\s/,'• ');
+    l=l.replace(/\*/g,'').trim();
+    if(isHead){const t=l.replace(/^##\s?/,'');html.push('<div class="bh">'+esc(t)+'</div>');clean.push('');clean.push(t.toUpperCase());return;}
+    if(/^Centro de Mando \(dashboard\)\s*:/i.test(l)){const url=l.replace(/^[^:]*:\s*/,'').trim();html.push('<div class="bmeta">🔗 Centro de Mando: <a href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(url)+'</a></div>');clean.push('Centro de Mando (dashboard): '+url);return;}
+    if(/^(Asunto|Para|De)\s*:/i.test(l)){html.push('<div class="bmeta">'+esc(l)+'</div>');clean.push(l);return;}
+    if(l===''){html.push('<div class="bsp"></div>');clean.push('');return;}
+    if(isBullet){html.push('<div class="bli">'+esc(l)+'</div>');clean.push(l);return;}
+    html.push('<div class="bp">'+esc(l)+'</div>');clean.push(l);
+  });
+  window._briefClean=clean.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+  return html.join('');
+}
+function copyBrief(){const t=window._briefClean||document.getElementById('briefOut').textContent;const done=()=>{const b=document.getElementById('btnCopyBrief');b.textContent='✓ Copiado';setTimeout(()=>b.textContent='⧉ Copiar correo',1800);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fbCopy(t,done));}else fbCopy(t,done);}
+function fbCopy(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){}document.body.removeChild(ta);}
+document.getElementById('btnGenBrief').onclick=generateBriefing;
+document.getElementById('btnRegen').onclick=generateBriefing;
+document.getElementById('btnCopyBrief').onclick=copyBrief;
+(function(){const inp=document.getElementById('dashUrl');if(!inp)return;inp.value=STATE.dashUrl||'';inp.addEventListener('input',e=>{STATE.dashUrl=e.target.value.trim();save();});})();
+
+/* Init */
+renderKPIs();drawCharts();renderEstadoTable();renderForecast();renderAlerts();renderPipe();renderUpcoming();
+</script>
+</body>
+</html>
