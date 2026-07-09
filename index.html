@@ -44,7 +44,13 @@
   .topbar .stamp{font-size:11px;color:#c3cede;white-space:nowrap;}
 
   .tabs{position:sticky;top:52px;z-index:30;background:var(--navy-deep);}
-  .tabs-inner{max-width:1300px;margin:0 auto;display:flex;gap:2px;padding:0 18px;overflow-x:auto;}
+  .tabs-bar{max-width:1300px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:0 14px;}
+  .tabs-inner{display:flex;gap:2px;overflow-x:auto;flex:1;}
+  .tabs-ctrls{display:flex;gap:10px;align-items:center;flex:none;}
+  .tabs-ctrls .tc{display:flex;flex-direction:column;gap:1px;}
+  .tabs-ctrls label{font-size:8.5px;color:var(--navy-light);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+  .tabs-ctrls input{width:82px;padding:3px 7px;border:none;border-radius:5px;font-family:inherit;font-size:11px;font-weight:700;text-align:right;background:rgba(255,255,255,.14);color:#fff;}
+  @media(max-width:900px){.tabs-ctrls{display:none;}}
   .tab{padding:12px 17px;font-size:13px;font-weight:600;color:#aebdd2;cursor:pointer;border:none;background:none;white-space:nowrap;border-bottom:3px solid transparent;transition:.15s;}
   .tab:hover{color:#fff;} .tab.active{color:#fff;border-bottom-color:var(--amber);}
   .tab .count{display:inline-block;margin-left:6px;font-size:11px;background:rgba(255,255,255,.12);padding:1px 7px;border-radius:20px;font-weight:600;}
@@ -281,19 +287,13 @@
   <span class="stamp" id="stamp"></span>
 </div>
 
-<nav class="tabs"><div class="tabs-inner" id="tabs"></div></nav>
+<nav class="tabs"><div class="tabs-bar"><div class="tabs-inner" id="tabs"></div><div class="tabs-ctrls"><span class="tc"><label>Meta USD</label><input type="number" id="metaInput" step="100000"></span><span class="tc"><label>CLP/USD</label><input type="number" id="fxCLP" value="950" step="1"></span><span class="tc"><label>EUR/USD</label><input type="number" id="fxEUR" value="0.92" step="0.01"></span></div></div></nav>
 
 <div class="wrap">
   <div class="print-head" id="printHead"><div class="ph-brand">revergy · Pipeline Comercial</div><div class="ph-date" id="phDate"></div></div>
   <section class="view active" id="view-mando">
     <div class="kpi-grid" id="kpiGrid"></div>
     <div class="panel" id="analisisPanel" style="border-left:4px solid var(--amber);margin-bottom:16px"><div class="panel-title"><span>📊 Análisis del negocio <span class="hint" id="analisisDate"></span></span><button class="btn ghost" id="btnIA" style="font-size:11px;padding:5px 10px">✦ Análisis con IA</button></div><div id="mvAnalisis"></div><div id="iaAnalisis" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)"></div></div>
-    <div class="filterbar" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin:16px 0">
-      <div class="fx-field"><label>Meta de pipeline (USD)</label><input type="number" id="metaInput" step="100000"></div>
-      <div class="fx-field"><label>CLP por USD</label><input type="number" id="fxCLP" value="950" step="1"></div>
-      <div class="fx-field"><label>EUR por USD</label><input type="number" id="fxEUR" value="0.92" step="0.01"></div>
-      <div class="note" style="flex:1;min-width:240px">⚠ Meta y tipos de cambio editables (referenciales). Los KPIs por Unidad, Servicio, Tecnología, País y Resultado se llenan según lo que clasifiques en el Excel (usa ⬆ Actualizar Excel).</div>
-    </div>
     <div class="panel" style="margin-bottom:16px"><div class="panel-title">🏆 Negocios ganados · detalle <span class="hint" id="ganCount"></span></div><div id="mvGanados"></div></div>
     <div class="grid-2b">
       <div class="panel"><div class="panel-title">Embudo comercial por etapa <span class="hint">Chile + Perú</span></div><div class="chart-box"><canvas id="mvFunnel"></canvas></div></div>
@@ -304,17 +304,16 @@
       <div class="panel"><div class="panel-title">Mix por Servicio</div><div class="chart-box" id="mvBoxSvc"><canvas id="mvSvc"></canvas></div></div>
     </div>
     <div class="grid-2b">
-      <div class="panel"><div class="panel-title">Por Tecnología</div><div class="chart-box" id="mvBoxTec"><canvas id="mvTec"></canvas></div></div>
-      <div class="panel"><div class="panel-title">Distribución geográfica <span class="hint">país de origen</span></div><div class="chart-box" id="mvBoxPais"><canvas id="mvPais"></canvas></div></div>
+      <div class="panel"><div class="panel-title">Por Tecnología <span class="hint">valor USD</span></div><div class="chart-box" id="mvBoxTec"><canvas id="mvTec"></canvas></div></div>
+      <div class="panel"><div class="panel-title">Distribución por país <span class="hint">operación · valor USD</span></div><div class="chart-box" id="mvBoxPais"><canvas id="mvPais"></canvas></div></div>
     </div>
     <div class="grid-2b">
-      <div class="panel"><div class="panel-title">Concentración de riesgo <span class="hint">valor ponderado</span></div><div class="mini" id="mvConcCap" style="margin-bottom:8px"></div><div class="chart-box"><canvas id="mvConc"></canvas></div></div>
+      <div class="panel"><div class="panel-title">Concentración de riesgo <span class="hint">valor total</span></div><div class="mini" id="mvConcCap" style="margin-bottom:8px"></div><div class="chart-box"><canvas id="mvConc"></canvas></div></div>
       <div class="panel"><div class="panel-title">Motivos de pérdida</div><div class="chart-box" id="mvBoxLoss"><canvas id="mvLoss"></canvas></div></div>
     </div>
-    <div class="grid-3">
-      <div class="panel"><div class="panel-title">Por Nivel</div><div class="chart-box" style="height:200px"><canvas id="mvNivel"></canvas></div></div>
-      <div class="panel"><div class="panel-title">Carga por Responsable</div><div class="chart-box" style="height:200px"><canvas id="mvResp"></canvas></div></div>
-      <div class="panel"><div class="panel-title">Por Resultado / Grado</div><div class="chart-box" style="height:200px" id="mvBoxRes"><canvas id="mvRes"></canvas></div></div>
+    <div class="grid-2b">
+      <div class="panel"><div class="panel-title">Prioridad de clientes (nivel)</div><div style="font-size:11px;color:var(--ink-soft);margin-bottom:8px">Cuántos clientes hay en cada nivel de prioridad comercial: ALTO (foco), MEDIO, BAJO.</div><div class="chart-box" style="height:210px"><canvas id="mvNivel"></canvas></div></div>
+      <div class="panel"><div class="panel-title">Por Resultado / Grado</div><div class="chart-box" style="height:210px" id="mvBoxRes"><canvas id="mvRes"></canvas></div></div>
     </div>
     <div class="panel">
       <div class="panel-title">Foco de cierre <span class="hint">en negociación / oferta · por valor USD</span></div>
@@ -446,7 +445,7 @@
 const RAW=JSON.parse(document.getElementById('data').textContent);
 if(window.Chart){var D=Chart.defaults;D.font.family="Heebo, 'Segoe UI', Arial, sans-serif";D.font.size=11;D.color='#5b6b7d';D.plugins.legend.labels.usePointStyle=true;D.plugins.legend.labels.boxWidth=8;D.plugins.legend.labels.padding=12;D.plugins.tooltip.backgroundColor='#233448';D.plugins.tooltip.padding=10;D.plugins.tooltip.cornerRadius=8;D.plugins.tooltip.titleFont={weight:'700'};D.elements.bar.borderRadius=6;D.elements.bar.borderSkipped=false;D.elements.arc.borderWidth=2;D.elements.arc.borderColor='#fff';if(D.datasets&&D.datasets.bar)D.datasets.bar.maxBarThickness=30;if(D.scale){D.scale.grid.color='#eef1f6';D.scale.grid.drawTicks=false;if(D.scale.border)D.scale.border.display=false;}}
 
-if(window.Chart){Chart.register({id:'valLabels',afterDatasetsDraw:function(c){var sc=c.options.scales||{};if((sc.x&&sc.x.stacked)||(sc.y&&sc.y.stacked))return;var ctx=c.ctx;ctx.save();ctx.font='700 11px Heebo, Arial, sans-serif';ctx.textBaseline='middle';var horiz=c.options.indexAxis==='y';function f(v){var a=Math.abs(v);if(a>=1e6)return (v/1e6).toFixed(1)+'M';if(a>=1e4)return Math.round(v/1e3)+'k';return String(v);}c.data.datasets.forEach(function(ds,di){var meta=c.getDatasetMeta(di);if(meta.hidden)return;var isArc=meta.data[0]&&/Arc/.test(meta.data[0].constructor.name);var sum=0;if(isArc)ds.data.forEach(function(x){sum+=(+x||0);});meta.data.forEach(function(el,i){var raw=ds.data[i];if(raw==null||raw===0)return;if(isArc){var pr2=el.getProps?el.getProps(['x','y','innerRadius','outerRadius','startAngle','endAngle'],true):null;var px,py;if(pr2){if((pr2.endAngle-pr2.startAngle)<0.24)return;var ang=(pr2.startAngle+pr2.endAngle)/2;var rr=(pr2.innerRadius+pr2.outerRadius)/2;px=pr2.x+Math.cos(ang)*rr;py=pr2.y+Math.sin(ang)*rr;}else{var pp=el.tooltipPosition();px=pp.x;py=pp.y;}var pct=sum?Math.round(raw/sum*100):0;var tt=raw+' · '+pct+'%';ctx.textAlign='center';ctx.font="800 11px Heebo, Arial, sans-serif";ctx.lineJoin='round';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(30,42,58,.65)';ctx.strokeText(tt,px,py);ctx.fillStyle='#fff';ctx.fillText(tt,px,py);}else if(horiz){var t=f(raw);var w=ctx.measureText(t).width;if(el.x+w+10>c.chartArea.right){ctx.fillStyle='#fff';ctx.textAlign='right';ctx.fillText(t,el.x-6,el.y);}else{ctx.fillStyle='#233448';ctx.textAlign='left';ctx.fillText(t,el.x+6,el.y);}}else{ctx.fillStyle='#233448';ctx.textAlign='center';ctx.fillText(f(raw),el.x,el.y-8);}});});ctx.restore();}});}
+if(window.Chart){Chart.register({id:'valLabels',afterDatasetsDraw:function(c){var sc=c.options.scales||{};if((sc.x&&sc.x.stacked)||(sc.y&&sc.y.stacked))return;var ctx=c.ctx;ctx.save();ctx.font='700 11px Heebo, Arial, sans-serif';ctx.textBaseline='middle';var horiz=c.options.indexAxis==='y';function f(v){var a=Math.abs(v);if(a>=1e6)return (v/1e6).toFixed(1)+'M';if(a>=1e4)return Math.round(v/1e3)+'k';return String(v);}c.data.datasets.forEach(function(ds,di){var meta=c.getDatasetMeta(di);if(meta.hidden)return;var isArc=meta.data[0]&&/Arc/.test(meta.data[0].constructor.name);var sum=0;if(isArc)ds.data.forEach(function(x){sum+=(+x||0);});meta.data.forEach(function(el,i){var raw=ds.data[i];if(raw==null||raw===0)return;if(isArc){var pr2=el.getProps?el.getProps(['x','y','innerRadius','outerRadius','startAngle','endAngle'],true):null;var px,py;if(pr2){if((pr2.endAngle-pr2.startAngle)<0.24)return;var ang=(pr2.startAngle+pr2.endAngle)/2;var rr=(pr2.innerRadius+pr2.outerRadius)/2;px=pr2.x+Math.cos(ang)*rr;py=pr2.y+Math.sin(ang)*rr;}else{var pp=el.tooltipPosition();px=pp.x;py=pp.y;}var pct=sum?Math.round(raw/sum*100):0;var tt=(Math.abs(raw)>=1000?f(raw):raw)+' · '+pct+'%';ctx.textAlign='center';ctx.font="800 11px Heebo, Arial, sans-serif";ctx.lineJoin='round';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(30,42,58,.65)';ctx.strokeText(tt,px,py);ctx.fillStyle='#fff';ctx.fillText(tt,px,py);}else if(horiz){var t=f(raw);var w=ctx.measureText(t).width;if(el.x+w+10>c.chartArea.right){ctx.fillStyle='#fff';ctx.textAlign='right';ctx.fillText(t,el.x-6,el.y);}else{ctx.fillStyle='#233448';ctx.textAlign='left';ctx.fillText(t,el.x+6,el.y);}}else{ctx.fillStyle='#233448';ctx.textAlign='center';ctx.fillText(f(raw),el.x,el.y-8);}});});ctx.restore();}});}
 
 const PIPE=RAW['_pipeline'], STAGE_PROB=RAW['_stageprob'];STAGE_PROB.Ganado=100;STAGE_PROB.Perdido=0;delete STAGE_PROB.Contactado;
 const STORE_KEY='revergy_cmd_v1';
@@ -486,10 +485,11 @@ function computeKPIs(){
   const total=PIPE.length,neg=PIPE.filter(p=>p.estado==='En negociación').length,of=PIPE.filter(p=>p.estado==='Ofertando').length;
   const conMonto=PIPE.filter(p=>num(p.monto)>0).length;let totUSD=0,weighted=0,negUSD=0;
   PIPE.forEach(p=>{const u=toUSD(p.monto,p.moneda);totUSD+=u;weighted+=u*(mvProb(p)/100);if(p.estado==='En negociación')negUSD+=u;});
+  const opp=PIPE.filter(p=>['Ofertando','En negociación','Ganado','Perdido'].indexOf(p.estado)>=0);let oppUSD=0;opp.forEach(p=>{oppUSD+=toUSD(p.monto,p.moneda);});
   const G=PIPE.filter(p=>p.estado==='Ganado').length,P=PIPE.filter(p=>p.estado==='Perdido').length;const wr=(G+P)?Math.round(G/(G+P)*100):null;
   const meta=STATE.meta||15000000;const cov=meta?Math.round(weighted/meta*100):0;
   return [
-    {v:total,l:'Oportunidades en pipeline',cls:'k-navy',sub:fmtUSD(totUSD),hint:'valor total del pipeline'},
+    {v:opp.length,l:'Oportunidades de negocio',cls:'k-navy',sub:fmtUSD(oppUSD),hint:'ofertando · negociación · ganado · perdido'},
     {v:fmtUSD(weighted),l:'Forecast ponderado',cls:'k-green',hint:'monto × probabilidad ('+conMonto+' valorizados)'},
     {v:neg,l:'En negociación',cls:'k-red',sub:fmtUSD(negUSD),hint:'total en juego'},
     {v:of,l:'Ofertando',cls:'k-amber',hint:'propuestas enviadas'},
@@ -916,7 +916,7 @@ function renderConc(){
   const cv=document.getElementById('chartConc');if(!cv)return;
   if(!vals.length){if(hint)hint.textContent='Sin montos valorizados aún.';return;}
   const top=vals.slice(0,6);const top3=vals.slice(0,3).reduce(function(s,x){return s+x.w;},0);
-  if(hint)hint.textContent='Top 3 clientes = '+(total?Math.round(top3/total*100):0)+'% del pipeline abierto ponderado ('+fmtUSD(total)+').';
+  if(hint)hint.textContent='Top 3 clientes = '+(total?Math.round(top3/total*100):0)+'% del pipeline abierto, valor total ('+fmtUSD(total)+').';
   CH.conc=new Chart(cv,{type:'bar',data:{labels:top.map(function(x){return x.c;}),datasets:[{data:top.map(function(x){return Math.round(x.w);}),backgroundColor:'#466294'}]},options:Object.assign({},COPT,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return (v/1e6).toFixed(1)+'M';}}}}})});
 }
 function renderRegional(){
@@ -1070,7 +1070,7 @@ function mvAgg(fld){const m={};PIPE.forEach(function(p){let k=p[fld];k=(k==null?
 const MVP=['#466294','#d68a2c','#3f8f6b','#7791b8','#b5482f','#6a8fbf','#c99a4e','#5f9e86','#9fb0c8','#8a5a1a'];
 const MVO={responsive:true,maintainAspectRatio:false};
 function mvDim(fld,cid,box,msg,color){if(!mvHas(fld)){mvNo(box,msg);return;}const m=mvAgg(fld);const ks=Object.keys(m).sort(function(a,b){return m[b].n-m[a].n;});mvChart(cid,{type:'bar',data:{labels:ks,datasets:[{data:ks.map(function(k){return m[k].n;}),backgroundColor:color}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{precision:0}}}})});}
-function mvFocusTot(rows){if(!rows.length)return '';var tu=0,tw=0,sp=0;rows.forEach(function(x){var pr=mvProb(x.p);tu+=x.u;tw+=x.u*pr/100;sp+=pr;});var avg=Math.round(sp/rows.length);return '<tr style="font-weight:800;border-top:2px solid var(--line);background:#fafbfd"><td>TOTAL ('+rows.length+')</td><td></td><td></td><td></td><td></td><td class="mini">\u2014 mixto</td><td class="money">'+Math.round(tu).toLocaleString('es-CL')+'</td><td>'+avg+'%</td><td class="money">'+Math.round(tw).toLocaleString('es-CL')+'</td></tr>';}
+function mvFocusTot(rows){if(!rows.length)return '';var tu=0,tw=0,sp=0,cCLP=0,cUSD=0,cEUR=0;rows.forEach(function(x){var p=x.p;var pr=mvProb(p);tu+=x.u;tw+=x.u*pr/100;sp+=pr;var m=num(p.monto);if(p.moneda==='CLP')cCLP+=m;else if(p.moneda==='USD')cUSD+=m;else if(p.moneda==='EUR')cEUR+=m;});var avg=Math.round(sp/rows.length);var mc='<span class="mini">CLP '+Math.round(cCLP).toLocaleString('es-CL')+' · USD '+Math.round(cUSD).toLocaleString('es-CL')+(cEUR?' · EUR '+Math.round(cEUR).toLocaleString('es-CL'):'')+'</span>';return '<tr style="font-weight:800;border-top:2px solid var(--line);background:#fafbfd"><td>TOTAL ('+rows.length+')</td><td></td><td></td><td></td><td></td><td>'+mc+'</td><td class="money">'+Math.round(tu).toLocaleString('es-CL')+'</td><td>'+avg+'%</td><td class="money">'+Math.round(tw).toLocaleString('es-CL')+'</td></tr>';}
 function mvFocus(){const rows=PIPE.filter(function(p){return ['En negociación','Ofertando'].indexOf(p.estado)>=0;}).map(function(p){return {p:p,u:toUSD(p.monto,p.moneda)};}).sort(function(a,b){return b.u-a.u;});const t=document.getElementById('mvFocus');if(!t)return;
   t.innerHTML='<thead><tr><th>Cliente</th><th>País</th><th>Nivel</th><th>Estado</th><th>UN</th><th>Monto</th><th>USD</th><th>Prob.</th><th>Ponderado</th></tr></thead><tbody>'+rows.map(function(x){const p=x.p,pr=mvProb(p);return '<tr><td class="c-name">'+esc(p.cliente)+'</td><td class="mini">'+esc(p.pais)+'</td><td>'+lvlBadge(p.nivel)+'</td><td>'+stBadge(p.estado)+'</td><td class="mini">'+esc(p.un||p.unidades.join(', '))+'</td><td>'+(p.monto?'<span class="money">'+num(p.monto).toLocaleString('es-CL')+'</span> <span class="cur">'+esc(p.moneda)+'</span>':'—')+'</td><td class="money">'+(x.u?Math.round(x.u).toLocaleString('es-CL'):'—')+'</td><td>'+pr+'%</td><td class="money">'+(x.u?Math.round(x.u*pr/100).toLocaleString('es-CL'):'—')+'</td></tr>';}).join('')+mvFocusTot(rows)+'</tbody>';
   if(!rows.length)t.innerHTML+='<tbody><tr><td colspan="9" style="text-align:center;color:#8a97a5;padding:20px">Sin oportunidades en negociación/oferta.</td></tr></tbody>';}
@@ -1119,18 +1119,17 @@ function renderMandoV2(){
   if(mvHas('un')){const m=mvAgg('un');const ks=Object.keys(m);mvChart('mvUN',{type:'bar',data:{labels:ks,datasets:[{label:'Valor USD',data:ks.map(function(k){return Math.round(m[k].v);}),backgroundColor:navy}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return (v/1e6).toFixed(1)+'M';}}}}})});}
   else mvNo('mvBoxUN','Clasifica cada negocio por Unidad (UN) en el Excel y cárgalo con ⬆ Actualizar Excel.');
   mvDim('servicio','mvSvc','mvBoxSvc','Clasifica el Servicio de cada negocio en el Excel.',amber);
-  if(mvHas('tecnologia')){const m=mvAgg('tecnologia');const ks=Object.keys(m);mvChart('mvTec',{type:'doughnut',data:{labels:ks,datasets:[{data:ks.map(function(k){return m[k].n;}),backgroundColor:MVP,borderColor:'#fff',borderWidth:2}]},options:Object.assign({},MVO,{cutout:'55%',plugins:{legend:{position:'right'}}})});}
+  if(mvHas('tecnologia')){const m=mvAgg('tecnologia');const ks=Object.keys(m).sort(function(a,b){return m[b].v-m[a].v;});mvChart('mvTec',{type:'doughnut',data:{labels:ks,datasets:[{data:ks.map(function(k){return Math.round(m[k].v)||m[k].n;}),backgroundColor:MVP,borderColor:'#fff',borderWidth:2}]},options:Object.assign({},MVO,{cutout:'58%',plugins:{legend:{position:'right'},tooltip:{callbacks:{label:function(c){var k=c.label;return ' '+m[k].n+' negocio(s) · '+fmtUSD(m[k].v);}}}}})});}
   else mvNo('mvBoxTec','Clasifica la Tecnología de cada negocio en el Excel.');
-  mvDim('paisOrigen','mvPais','mvBoxPais','Asigna el País de origen del cliente en el Excel.',navy);
-  const cv=PIPE.filter(function(p){return ['Ganado','Perdido'].indexOf(p.estado)<0;}).map(function(p){return {c:p.cliente,w:toUSD(p.monto,p.moneda)*mvProb(p)/100};}).filter(function(x){return x.w>0;}).sort(function(a,b){return b.w-a.w;});
-  if(cv.length){const top=cv.slice(0,8),tot=cv.reduce(function(s,x){return s+x.w;},0),t3=cv.slice(0,3).reduce(function(s,x){return s+x.w;},0);document.getElementById('mvConcCap').textContent='Top 3 clientes = '+(tot?Math.round(t3/tot*100):0)+'% del pipeline abierto ponderado ('+fmtUSD(tot)+').';mvChart('mvConc',{type:'bar',data:{labels:top.map(function(x){return x.c;}),datasets:[{data:top.map(function(x){return Math.round(x.w);}),backgroundColor:navy}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return (v/1e6).toFixed(1)+'M';}}}}})});}
+  var mpais=mvAgg('pais');var pks=Object.keys(mpais).sort(function(a,b){return mpais[b].v-mpais[a].v;});if(pks.length){mvChart('mvPais',{type:'doughnut',data:{labels:pks,datasets:[{data:pks.map(function(k){return Math.round(mpais[k].v)||mpais[k].n;}),backgroundColor:[navy,amber,green,lightn]}]},options:Object.assign({},MVO,{cutout:'58%',plugins:{legend:{position:'right'},tooltip:{callbacks:{label:function(c){var k=c.label;return ' '+mpais[k].n+' negocio(s) · '+fmtUSD(mpais[k].v);}}}}})});}else mvNo('mvBoxPais','Sin datos.');
+  const cv=PIPE.filter(function(p){return ['Ganado','Perdido'].indexOf(p.estado)<0;}).map(function(p){return {c:p.cliente,w:toUSD(p.monto,p.moneda)};}).filter(function(x){return x.w>0;}).sort(function(a,b){return b.w-a.w;});
+  if(cv.length){const top=cv.slice(0,8),tot=cv.reduce(function(s,x){return s+x.w;},0),t3=cv.slice(0,3).reduce(function(s,x){return s+x.w;},0);document.getElementById('mvConcCap').textContent='Top 3 clientes = '+(tot?Math.round(t3/tot*100):0)+'% del pipeline abierto, valor total ('+fmtUSD(tot)+').';mvChart('mvConc',{type:'bar',data:{labels:top.map(function(x){return x.c;}),datasets:[{data:top.map(function(x){return Math.round(x.w);}),backgroundColor:navy}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return (v/1e6).toFixed(1)+'M';}}}}})});}
   else document.getElementById('mvConcCap').textContent='Sin montos valorizados aún.';
   const lost={};PIPE.forEach(function(p){if(p.estado==='Perdido'&&p.motivo)lost[p.motivo]=(lost[p.motivo]||0)+1;});
   if(Object.keys(lost).length){const ks=Object.keys(lost);mvChart('mvLoss',{type:'bar',data:{labels:ks,datasets:[{data:ks.map(function(k){return lost[k];}),backgroundColor:red}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{precision:0}}}})});}
   else mvNo('mvBoxLoss','Registra el Motivo al marcar negocios como «Perdido».');
-  const niv=mvAgg('nivel');mvChart('mvNivel',{type:'doughnut',data:{labels:['ALTO','MEDIO','BAJO'],datasets:[{data:['ALTO','MEDIO','BAJO'].map(function(k){return (niv[k]||{}).n||0;}),backgroundColor:[green,amber,lightn],borderColor:'#fff',borderWidth:2}]},options:Object.assign({},MVO,{cutout:'55%',plugins:{legend:{position:'bottom'}}})});
-  const rp=mvAgg('responsable');const rk=Object.keys(rp);mvChart('mvResp',{type:'bar',data:{labels:rk,datasets:[{data:rk.map(function(k){return rp[k].n;}),backgroundColor:navy}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{precision:0}}}})});
-  mvDim('resultado','mvRes','mvBoxRes','Clasifica «Descripción / Resultado» de cada negocio en el Excel.',amber);
+  const niv=mvAgg('nivel');mvChart('mvNivel',{type:'bar',data:{labels:['ALTO','MEDIO','BAJO'],datasets:[{data:['ALTO','MEDIO','BAJO'].map(function(k){return (niv[k]||{}).n||0;}),backgroundColor:[green,amber,lightn]}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{precision:0}}}})});
+  if(mvHas('resultado')){var mr=mvAgg('resultado');var rks=Object.keys(mr).sort(function(a,b){return mr[b].n-mr[a].n;});mvChart('mvRes',{type:'bar',data:{labels:rks,datasets:[{data:rks.map(function(k){return mr[k].n;}),backgroundColor:rks.map(function(k){return k==='Contrato firmado y lanzada la NTP'?green:(/perdido/i.test(k)?red:amber);})}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{precision:0}}}})});}else mvNo('mvBoxRes','Clasifica «Descripción / Resultado» de cada negocio en el Excel.');
   mvFocus();
 }
 
