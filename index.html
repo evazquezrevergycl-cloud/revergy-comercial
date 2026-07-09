@@ -220,7 +220,11 @@
   }
 
   /* kanban */
-  .ktop{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#9fb0c8 transparent;margin-bottom:6px;}
+  .ksticky{position:sticky;top:100px;z-index:20;background:var(--paper);padding:6px 0 4px;}
+  .kanban-totals{display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--navy-deep);color:#fff;border-radius:10px;padding:9px 16px;font-size:12px;margin-bottom:6px;box-shadow:0 2px 8px rgba(35,52,72,.12);}
+  .kanban-totals .lb{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:10px;color:var(--navy-light);}
+  .kanban-totals b{color:#fff;font-size:13px;} .kanban-totals b.amber{color:var(--amber);}
+  .ktop{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#9fb0c8 transparent;}
   .ktop>div{height:1px;}
   .ktop::-webkit-scrollbar{height:10px;} .ktop::-webkit-scrollbar-thumb{background:#9fb0c8;border-radius:6px;} .ktop::-webkit-scrollbar-track{background:#e7ecf3;border-radius:6px;}
   .kcol-stats{display:flex;justify-content:space-between;gap:4px;font-size:9.5px;font-weight:800;color:var(--navy-deep);background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 6px;margin:0 0 8px;}
@@ -283,7 +287,7 @@
   <div class="print-head" id="printHead"><div class="ph-brand">revergy · Pipeline Comercial</div><div class="ph-date" id="phDate"></div></div>
   <section class="view active" id="view-mando">
     <div class="kpi-grid" id="kpiGrid"></div>
-    <div class="panel" id="analisisPanel" style="border-left:4px solid var(--amber);margin-bottom:16px"><div class="panel-title">📊 Análisis del negocio <span class="hint" id="analisisDate"></span></div><div id="mvAnalisis"></div></div>
+    <div class="panel" id="analisisPanel" style="border-left:4px solid var(--amber);margin-bottom:16px"><div class="panel-title"><span>📊 Análisis del negocio <span class="hint" id="analisisDate"></span></span><button class="btn ghost" id="btnIA" style="font-size:11px;padding:5px 10px">✦ Análisis con IA</button></div><div id="mvAnalisis"></div><div id="iaAnalisis" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)"></div></div>
     <div class="filterbar" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin:16px 0">
       <div class="fx-field"><label>Meta de pipeline (USD)</label><input type="number" id="metaInput" step="100000"></div>
       <div class="fx-field"><label>CLP por USD</label><input type="number" id="fxCLP" value="950" step="1"></div>
@@ -338,8 +342,12 @@
       <div class="chips" id="quickChips"></div>
     </div>
     <div class="mini" style="margin-bottom:8px">Cada etapa muestra: <b>probabilidad</b> · <b>monto USD total</b> · <b>ponderado</b> (arriba y abajo de cada columna).</div>
-    <div class="ktop" id="kanbanTop"><div id="kanbanTopInner"></div></div>
+    <div class="ksticky" id="kanbanSticky">
+      <div class="kanban-totals" id="kTotTop"></div>
+      <div class="ktop" id="kanbanTop"><div id="kanbanTopInner"></div></div>
+    </div>
     <div class="kanban" id="kanbanBoard"></div>
+    <div class="kanban-totals" id="kTotBot" style="margin-top:12px"></div>
   </section>
 
   <section class="view" id="view-contactos">
@@ -440,12 +448,13 @@ if(window.Chart){var D=Chart.defaults;D.font.family="Heebo, 'Segoe UI', Arial, s
 
 if(window.Chart){Chart.register({id:'valLabels',afterDatasetsDraw:function(c){var sc=c.options.scales||{};if((sc.x&&sc.x.stacked)||(sc.y&&sc.y.stacked))return;var ctx=c.ctx;ctx.save();ctx.font='700 11px Heebo, Arial, sans-serif';ctx.textBaseline='middle';var horiz=c.options.indexAxis==='y';function f(v){var a=Math.abs(v);if(a>=1e6)return (v/1e6).toFixed(1)+'M';if(a>=1e4)return Math.round(v/1e3)+'k';return String(v);}c.data.datasets.forEach(function(ds,di){var meta=c.getDatasetMeta(di);if(meta.hidden)return;var isArc=meta.data[0]&&/Arc/.test(meta.data[0].constructor.name);var sum=0;if(isArc)ds.data.forEach(function(x){sum+=(+x||0);});meta.data.forEach(function(el,i){var raw=ds.data[i];if(raw==null||raw===0)return;if(isArc){var pr2=el.getProps?el.getProps(['x','y','innerRadius','outerRadius','startAngle','endAngle'],true):null;var px,py;if(pr2){if((pr2.endAngle-pr2.startAngle)<0.24)return;var ang=(pr2.startAngle+pr2.endAngle)/2;var rr=(pr2.innerRadius+pr2.outerRadius)/2;px=pr2.x+Math.cos(ang)*rr;py=pr2.y+Math.sin(ang)*rr;}else{var pp=el.tooltipPosition();px=pp.x;py=pp.y;}var pct=sum?Math.round(raw/sum*100):0;var tt=raw+' · '+pct+'%';ctx.textAlign='center';ctx.font="800 11px Heebo, Arial, sans-serif";ctx.lineJoin='round';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(30,42,58,.65)';ctx.strokeText(tt,px,py);ctx.fillStyle='#fff';ctx.fillText(tt,px,py);}else if(horiz){var t=f(raw);var w=ctx.measureText(t).width;if(el.x+w+10>c.chartArea.right){ctx.fillStyle='#fff';ctx.textAlign='right';ctx.fillText(t,el.x-6,el.y);}else{ctx.fillStyle='#233448';ctx.textAlign='left';ctx.fillText(t,el.x+6,el.y);}}else{ctx.fillStyle='#233448';ctx.textAlign='center';ctx.fillText(f(raw),el.x,el.y-8);}});});ctx.restore();}});}
 
-const PIPE=RAW['_pipeline'], STAGE_PROB=RAW['_stageprob'];STAGE_PROB.Ganado=100;STAGE_PROB.Perdido=0;
+const PIPE=RAW['_pipeline'], STAGE_PROB=RAW['_stageprob'];STAGE_PROB.Ganado=100;STAGE_PROB.Perdido=0;delete STAGE_PROB.Contactado;
 const STORE_KEY='revergy_cmd_v1';
 let STATE=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
 STATE.track=STATE.track||{}; STATE.fx=STATE.fx||{CLP:950,EUR:0.92}; STATE.stageOverride=STATE.stageOverride||{}; STATE.snapshots=STATE.snapshots||[];
 if(STATE.dataset&&Array.isArray(STATE.dataset.pipeline)&&STATE.dataset.pipeline.length){PIPE.length=0;STATE.dataset.pipeline.forEach(function(p){PIPE.push(p);});if(STATE.dataset.contactos)RAW['Contactos']=STATE.dataset.contactos;}
 PIPE.forEach(p=>{const ov=STATE.stageOverride[p.pais+'|'+p.cliente];if(ov){p.estado=ov;p.prob=(STAGE_PROB[ov]!=null?STAGE_PROB[ov]:p.prob);}});
+PIPE.forEach(function(p){if(p.estado==='Contactado'){p.estado='En seguimiento';p.prob=(STAGE_PROB['En seguimiento']||20);}});
 function save(){localStorage.setItem(STORE_KEY,JSON.stringify(STATE));}
 const key=p=>p.pais+'|'+p.cliente;
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -453,7 +462,7 @@ function num(x){const n=parseFloat(String(x).replace(/[^0-9.-]/g,''));return isN
 const today=new Date();
 document.getElementById('stamp').textContent='Corte pipeline: jul 2026';
 
-function stBadge(v){const m={'En negociación':'st-neg','Ofertando':'st-of','En seguimiento':'st-seg','Contactado':'st-cont','Reunión agendada':'st-reu','Sin contacto':'st-sin','No contesta':'st-no','Ganado':'st-won','Perdido':'st-lost'};return v?`<span class="badge ${m[v]||'st-cont'}">${v}</span>`:'';}
+function stBadge(v){const m={'En negociación':'st-neg','Ofertando':'st-of','En seguimiento':'st-seg','Reunión agendada':'st-reu','Sin contacto':'st-sin','No contesta':'st-no','Ganado':'st-won','Perdido':'st-lost'};return v?`<span class="badge ${m[v]||'st-cont'}">${v}</span>`:'';}
 function lvlBadge(v){return v?`<span class="badge lvl-${v}">${v}</span>`:'';}
 function fmtMoney(v,cur){const n=num(v);if(!n)return '<span class="mini">—</span>';return `<span class="money">${n.toLocaleString('es-CL')}</span> <span class="cur">${cur||''}</span>`;}
 function toUSD(monto,cur){const n=num(monto);if(!n)return 0;const fx=STATE.fx;if(cur==='USD')return n;if(cur==='CLP')return n/(fx.CLP||950);if(cur==='EUR')return n/(fx.EUR||0.92);return 0;}
@@ -513,7 +522,7 @@ document.getElementById('fxCLP').value=STATE.fx.CLP;document.getElementById('fxE
 
 /* Charts */
 const navy='#466294',amber='#d68a2c',green='#3f8f6b',lightn='#7791b8';
-const STAGES=['Sin contacto','Contactado','No contesta','Reunión agendada','En seguimiento','Ofertando','En negociación'];
+const STAGES=['Sin contacto','No contesta','Reunión agendada','En seguimiento','Ofertando','En negociación'];
 const STAGES_ALL=STAGES.concat(['Ganado','Perdido']);
 function cnt(fn){const m={};PIPE.forEach(p=>{const k=fn(p);if(k==null)return;(Array.isArray(k)?k:[k]).forEach(kk=>m[kk]=(m[kk]||0)+1);});return m;}
 const COPT={responsive:true,maintainAspectRatio:false};
@@ -810,7 +819,7 @@ function renderAging(){
     top.map(x=>'<div class="age-item"><span class="c-name" onclick="openClient(\''+esc(x.p.pais)+'\',\''+esc(x.p.cliente)+'\')">'+esc(x.p.cliente)+'</span><span class="mini">'+lvlBadge(x.p.nivel)+' '+dbadge(x.ds)+'</span></div>').join('');
 }
 (function(){const mi=document.getElementById('metaInput');if(mi){mi.value=STATE.meta||15000000;mi.addEventListener('input',e=>{STATE.meta=parseFloat(e.target.value)||0;save();refreshDerived();});}})();
-document.getElementById('btnPrint').onclick=function(){document.getElementById('phDate').textContent='Generado '+new Date().toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});window.print();};
+document.getElementById('btnPrint').onclick=function(){document.getElementById('phDate').textContent='Generado '+new Date().toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});if(window.cowork&&window.cowork.askClaude&&!window._iaText){var r=generateAnalisisIA();if(r&&r.then){r.then(function(){setTimeout(window.print,250);});return;}}window.print();};
 document.getElementById('btnPresent').onclick=function(){document.body.classList.toggle('pres');const el=document.documentElement;
   if(document.body.classList.contains('pres')){if(el.requestFullscreen)el.requestFullscreen().catch(function(){});}
   else{if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(function(){});}};
@@ -843,6 +852,10 @@ function renderKanban(){
     var top='<div class="kcol-stats">'+stats+'</div>';var bot='<div class="kcol-stats kf">'+stats+'</div>';
     const kc=st==='Ganado'?' kwon':st==='Perdido'?' klost':'';return '<div class="kcol'+kc+'"><div class="kcol-h">'+stBadge(st)+'<span class="kcol-n">'+items.length+'</span></div>'+top+'<div class="kcol-body" data-stage="'+esc(st)+'">'+cards+'</div>'+bot+'</div>';
   }).join('');
+  var gU=0,gW=0,gP=0,gN=FILT.length;FILT.forEach(function(p){var u=toUSD(p.monto,p.moneda);gU+=u;gW+=u*mvProb(p)/100;gP+=mvProb(p);});var gAvg=gN?Math.round(gP/gN):0;
+  function gkf(v){var a=Math.abs(v);if(a>=1e6)return '$'+(v/1e6).toFixed(1)+'M';if(a>=1e3)return '$'+Math.round(v/1e3)+'k';return '$'+Math.round(v);}
+  var gtot='<span class="lb">Total pipeline ('+gN+')</span> <span class="lb">Prob. prom:</span> <b>'+gAvg+'%</b> <span class="lb">Monto USD:</span> <b>'+gkf(gU)+'</b> <span class="lb">Ponderado:</span> <b class="amber">~'+gkf(gW)+'</b>';
+  var _tt=document.getElementById('kTotTop');if(_tt)_tt.innerHTML=gtot;var _tb=document.getElementById('kTotBot');if(_tb)_tb.innerHTML=gtot;
   wireKanbanDnD();syncKanbanScroll();
 }
 function syncKanbanScroll(){var top=document.getElementById('kanbanTop'),board=document.getElementById('kanbanBoard'),inner=document.getElementById('kanbanTopInner');if(!top||!board||!inner)return;inner.style.width=board.scrollWidth+'px';if(!top._wired){top._wired=1;top.addEventListener('scroll',function(){board.scrollLeft=top.scrollLeft;});board.addEventListener('scroll',function(){top.scrollLeft=board.scrollLeft;});window.addEventListener('resize',function(){inner.style.width=board.scrollWidth+'px';});}}
@@ -1082,6 +1095,15 @@ function renderAnalisis(){var el=document.getElementById('mvAnalisis');if(!el)re
   el.innerHTML='<ul style="margin:0;padding-left:18px;line-height:1.75;font-size:12.8px;color:var(--ink)">'+b.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
   var dt=document.getElementById('analisisDate');if(dt)dt.textContent='al '+new Date().toLocaleDateString('es-CL',{day:'numeric',month:'short',year:'numeric'});
 }
+function renderIA(raw){var lines=String(raw||'').trim().split(/\n/);return lines.map(function(l){l=l.trim();if(!l)return '<div style="height:6px"></div>';l=esc(l).replace(/\*\*([^*]+)\*\*/g,'<b style="color:var(--navy-deep)">$1</b>');return '<div style="font-size:12.8px;line-height:1.6;margin:2px 0">'+l+'</div>';}).join('');}
+function downloadIA(){var txt=window._iaText||'';if(!txt){alert('Primero genera el análisis con IA.');return;}var d=new Date();var doc='<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><title>Análisis del negocio · Revergy</title></head><body style=\"margin:0;background:#f4f6f9;font-family:Segoe UI,Arial,sans-serif\"><div style=\"max-width:720px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 14px rgba(35,52,72,.12)\"><div style=\"background:linear-gradient(120deg,#233448,#466294);color:#fff;padding:20px 26px;border-bottom:3px solid #d68a2c\"><div style=\"font-size:19px;font-weight:800\">revergy</div><div style=\"font-size:11px;color:#aebdd2;text-transform:uppercase;letter-spacing:.12em;margin-top:2px\">Análisis del negocio · IA</div></div><div style=\"padding:24px 26px;color:#1c2733\">'+renderIA(txt)+'</div><div style=\"background:#233448;color:#aebdd2;font-size:11px;text-align:center;padding:14px\">Revergy · '+d.toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'})+'</div></div></body></html>';var b=new Blob([doc],{type:'text/html;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='revergy_analisis_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.html';document.body.appendChild(a);a.click();a.remove();}
+function generateAnalisisIA(){var out=document.getElementById('iaAnalisis');var btn=document.getElementById('btnIA');if(!out)return;
+  if(!window.cowork||!window.cowork.askClaude){out.style.display='';out.innerHTML='<span class="mini">El análisis con IA funciona dentro de Claude/Cowork. En el sitio web usa el resumen automático de arriba.</span>';return;}
+  out.style.display='';out.innerHTML='<span class="mini">Generando análisis…</span>';btn.disabled=true;
+  var data=PIPE.map(function(p){return {cliente:p.cliente,pais:p.pais,nivel:p.nivel,estado:p.estado,monto_usd:Math.round(toUSD(p.monto,p.moneda)),prob:mvProb(p),un:p.un,servicio:p.servicio,tecnologia:p.tecnologia,situacion:p.situacion,proximo_paso:p.pasos,motivo:p.motivo};});
+  var prompt='Eres analista comercial senior de Revergy (servicios O&M e ingenieria para renovables PV/Wind/BESS en Chile y Peru). Con el pipeline adjunto, escribe un ANALISIS EJECUTIVO en espanol, maximo 150 palabras, en 4 bloques cortos con encabezado en negrita (usa **texto**): Estado del pipeline, Foco de cierre, Riesgos, Recomendaciones (2-3 acciones concretas con nombre de cliente). Tono directivo, conciso, sin relleno. No inventes datos que no esten en el pipeline.';
+  return window.cowork.askClaude(prompt,[{pipeline:data}]).then(function(res){var t=typeof res==='string'?res:(res&&(res.text||res.content||res.output||res.response||res.message))||'';if(typeof t!=='string')t=JSON.stringify(t);window._iaText=t;out.innerHTML='<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="btn ghost" id="btnIADown" style="font-size:10.5px;padding:4px 9px">\u2b07 Descargar análisis</button></div>'+renderIA(t);var db=document.getElementById('btnIADown');if(db)db.onclick=downloadIA;btn.disabled=false;}).catch(function(e){out.innerHTML='<span class="mini">No se pudo generar: '+esc(e.message||e)+'</span>';btn.disabled=false;});}
+var _iab=document.getElementById('btnIA');if(_iab)_iab.onclick=generateAnalisisIA;
 function renderGanados(){var el=document.getElementById('mvGanados');if(!el)return;var g=PIPE.filter(function(p){return p.estado==='Ganado';});var cnt=document.getElementById('ganCount');
   if(!g.length){if(cnt)cnt.textContent='';el.innerHTML='<div class="mini">A\u00fan no hay negocios marcados como \u00abGanado\u00bb. Arr\u00e1stralos a la columna Ganado en el Pipeline o m\u00e1rcalos en el Excel.</div>';return;}
   g.sort(function(a,b){return toUSD(b.monto,b.moneda)-toUSD(a.monto,a.moneda);});var totU=0;g.forEach(function(p){totU+=toUSD(p.monto,p.moneda);});
