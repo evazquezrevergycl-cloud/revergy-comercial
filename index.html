@@ -1046,8 +1046,8 @@ function _parseCore(block){const LV={'ALTO':1,'MEDIO':1,'BAJO':1};const toks=blo
   while(i<toks.length){if(toks[i+1]&&LV[toks[i+1]]){const name=toks[i];const level=toks[i+1];const est=toks[i+2]||'';let j=i+3;let mon='',amt='';if(['USD','CLP','EUR'].indexOf(toks[j])>=0){mon=toks[j];amt=(toks[j+1]||'').replace(/[^0-9.]/g,'');j+=2;}rows.push({name:name,level:level,estado:est,moneda:mon,monto:amt});i=j;}else{i++;}}
   return rows;}
 function parseSharePointExcel(text){
-  const ch=_sliceBlock(text,'Monto contrato','Seguimiento comercial · Chile');
-  let peru=null;if(ch)peru=_sliceBlock(text,'Monto contrato','Seguimiento comercial · Perú',ch.end);
+  const ch=_sliceBlock(text,'Monto contrato','Situación y oportunidades');
+  let peru=null;if(ch)peru=_sliceBlock(text,'Monto contrato','Situación y oportunidades',ch.end);
   const rowsCh=ch?_parseCore(ch.block):[];const rowsPe=peru?_parseCore(peru.block):[];
   const seen={};const pipe=[];
   function push(rw,pais){const nm=_NAME[rw.name]||rw.name;const k=pais+'|'+nm;if(seen[k])return;seen[k]=1;
@@ -1071,7 +1071,7 @@ async function updateFromSharePoint(){
     const parsed=parseSharePointExcel(text);
     if(parsed.pipeline.length<15)throw new Error('Solo pude interpretar '+parsed.pipeline.length+' clientes; el formato del archivo puede haber cambiado. Usa el botón «Excel» para una lectura exacta.');
     const prev={};PIPE.forEach(function(p){prev[p.pais+'|'+p.cliente]=p;});
-    parsed.pipeline.forEach(function(p){const o=prev[p.pais+'|'+p.cliente];if(o){p.situacion=o.situacion;p.responsable=o.responsable;p.pasos=o.pasos;}p.unidades=_units((p.situacion||'')+' '+p.cliente);});
+    parsed.pipeline.forEach(function(p){const o=prev[p.pais+'|'+p.cliente];if(o){p.situacion=o.situacion;p.responsable=o.responsable;p.pasos=o.pasos;p.tecnologia=o.tecnologia;p.servicio=o.servicio;p.grado=o.grado;p.resultado=o.resultado;p.un=o.un;p.motivo=o.motivo;p.cierre=o.cierre;p.paisOrigen=o.paisOrigen;p.tipologia=o.tipologia;p.tipoProyecto=o.tipoProyecto;p.descServicio=o.descServicio;p.perfil=o.perfil;}p.unidades=_units((p.situacion||'')+' '+p.cliente);});
     STATE.dataset={pipeline:parsed.pipeline,contactos:RAW['Contactos'],at:new Date().toISOString(),src:'sharepoint'};
     STATE.stageOverride={};save();
     alert('✓ Pipeline actualizado desde SharePoint: '+parsed.pipeline.length+' clientes.\n\nNota: se actualizaron cliente, nivel, estado y monto. La situación, responsable y próximos pasos se conservan del último import completo (usa «Excel» para refrescar también esos campos). Se recargará el dashboard.');
