@@ -323,12 +323,8 @@
       <div class="panel"><div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Forecast ponderado <span class="hint">fecha de cierre</span></span><span style="display:inline-flex;gap:4px"><button id="fcMes" onclick="setFcMode('mes')" style="font:inherit;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:6px;cursor:pointer;border:1px solid #cbd5e2;background:#fff;color:#466294">Mes</button><button id="fcTrim" onclick="setFcMode('trim')" style="font:inherit;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:6px;cursor:pointer;border:1px solid #466294;background:#466294;color:#fff">Trimestre</button></span></div>
       <div class="pcap" id="fcCap">Ingreso esperado (monto × probabilidad) agrupado por trimestre de cierre.</div><div class="chart-box" id="mvBoxQ"><canvas id="mvQuarter"></canvas></div></div>
     </div>
-    <div class="grid-2b">
-      <div class="panel"><div class="panel-title">Valor por Unidad de Negocio (UN)</div>
-      <div class="pcap">En qué unidad (AMN/ENG/PVOM/WDOM) se concentra el valor del pipeline, en USD.</div><div class="chart-box" id="mvBoxUN"><canvas id="mvUN"></canvas></div></div>
-      <div class="panel"><div class="panel-title">Mix por Servicio</div>
-      <div class="pcap">Qué tipo de servicio se está ofertando más (nº de negocios).</div><div class="chart-box" id="mvBoxSvc"><canvas id="mvSvc"></canvas></div></div>
-    </div>
+    <div class="panel"><div class="panel-title"><span>Valor por Unidad de Negocio (UN)</span><span class="hint" id="mvUNCap"></span></div>
+      <div class="pcap">Dónde se concentra el valor del pipeline por unidad de negocio (PV O&M, Wind O&M, Ingeniería, Asset Mgmt), en USD.</div><div class="chart-box" id="mvBoxUN" style="height:240px"><canvas id="mvUN"></canvas></div></div>
     <div class="grid-2b">
       <div class="panel"><div class="panel-title">Por Tecnología <span class="hint">valor USD</span></div>
       <div class="pcap">Valor del pipeline según la tecnología del activo.</div><div class="chart-box" id="mvBoxTec"><canvas id="mvTec"></canvas></div></div>
@@ -481,7 +477,9 @@ const PIPE=RAW['_pipeline'], STAGE_PROB=RAW['_stageprob'];STAGE_PROB.Ganado=100;
 const STORE_KEY='revergy_cmd_v1';
 let STATE=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
 STATE.track=STATE.track||{}; STATE.fx=STATE.fx||{CLP:950,EUR:0.92}; STATE.stageOverride=STATE.stageOverride||{}; STATE.snapshots=STATE.snapshots||[];
-if(STATE.dataset&&Array.isArray(STATE.dataset.pipeline)&&STATE.dataset.pipeline.length){var _baked={};RAW['_pipeline'].forEach(function(b){_baked[b.pais+'|'+b.cliente]=b;});var _TAX=['tecnologia','servicio','un','grado','resultado','cierre','motivo','paisOrigen','tipologia','tipoProyecto','descServicio','perfil'];var _ds=STATE.dataset.pipeline.map(function(p){var b=_baked[p.pais+'|'+p.cliente];if(b){_TAX.forEach(function(k){if(p[k]==null||String(p[k]).trim()===''){if(b[k]!=null&&String(b[k]).trim()!=='')p[k]=b[k];}});if(!p.situacion&&b.situacion)p.situacion=b.situacion;if(!p.responsable&&b.responsable)p.responsable=b.responsable;if(!p.pasos&&b.pasos)p.pasos=b.pasos;}return p;});PIPE.length=0;_ds.forEach(function(p){PIPE.push(p);});if(STATE.dataset.contactos)RAW['Contactos']=STATE.dataset.contactos;}
+/* Import NO persistente: el dashboard siempre arranca con los datos base incrustados. Un import se aplica solo en memoria. */
+function applyPipeline(newPipe,newCont){var _baked={};RAW['_pipeline'].forEach(function(b){_baked[b.pais+'|'+b.cliente]=b;});var _TAX=['tecnologia','servicio','un','grado','resultado','cierre','motivo','paisOrigen','tipologia','tipoProyecto','descServicio','perfil'];var _ds=newPipe.map(function(p){var b=_baked[p.pais+'|'+p.cliente];if(b){_TAX.forEach(function(k){if(p[k]==null||String(p[k]).trim()===''){if(b[k]!=null&&String(b[k]).trim()!=='')p[k]=b[k];}});if(!p.situacion&&b.situacion)p.situacion=b.situacion;if(!p.responsable&&b.responsable)p.responsable=b.responsable;if(!p.pasos&&b.pasos)p.pasos=b.pasos;}return p;});PIPE.length=0;_ds.forEach(function(p){PIPE.push(p);});if(newCont)RAW['Contactos']=newCont;}
+function rerenderAll(){try{renderUpcoming();}catch(e){}try{renderKanban();}catch(e){}try{fillMandoFilters();}catch(e){}try{renderMandoV2();}catch(e){}try{if(window.renderCont)window.renderCont();}catch(e){}}
 PIPE.forEach(p=>{const ov=STATE.stageOverride[p.pais+'|'+p.cliente];if(ov){p.estado=ov;p.prob=(STAGE_PROB[ov]!=null?STAGE_PROB[ov]:p.prob);}});
 PIPE.forEach(function(p){if(p.estado==='Contactado'){p.estado='En seguimiento';p.prob=(STAGE_PROB['En seguimiento']||20);}});
 function save(){localStorage.setItem(STORE_KEY,JSON.stringify(STATE));}
@@ -1035,11 +1033,9 @@ function importExcel(file){
     const contRows=sh('Contactos');let newCont=null;
     if(contRows){newCont=contRows.map(function(rw){return rw.map(function(c){return _clean((c==null?'':c).toString());});});
       newCont.slice(3).forEach(function(rw){if(rw[1]==='ELECNOR Perú'&&rw[0]==='Chile')rw[0]='Perú';if(_NAME[rw[1]])rw[1]=_NAME[rw[1]];});}
-    STATE.dataset={pipeline:newPipe,contactos:newCont||RAW['Contactos'],at:new Date().toISOString()};
-    STATE.stageOverride={};
-    save();
-    alert('✓ Excel importado: '+newPipe.length+' clientes'+(newCont?' y '+(newCont.length-3)+' contactos':'')+'. Se actualizará el dashboard.');
-    location.reload();
+    STATE.stageOverride={};save();
+    applyPipeline(newPipe,newCont||RAW['Contactos']);rerenderAll();
+    alert('✓ Excel importado: '+newPipe.length+' clientes'+(newCont?' y '+(newCont.length-3)+' contactos':'')+'. Aplicado a esta sesión (al recargar vuelve a los datos base del dashboard).');
   }catch(err){alert('No se pudo leer el Excel: '+err.message);}};
   r.readAsArrayBuffer(file);
 }
@@ -1096,14 +1092,13 @@ async function updateFromSharePoint(){
     if(parsed.pipeline.length<15)throw new Error('Solo pude interpretar '+parsed.pipeline.length+' clientes; el formato del archivo puede haber cambiado. Usa el botón «Excel» para una lectura exacta.');
     const prev={};PIPE.forEach(function(p){prev[p.pais+'|'+p.cliente]=p;});
     parsed.pipeline.forEach(function(p){const o=prev[p.pais+'|'+p.cliente];if(o){p.situacion=o.situacion;p.responsable=o.responsable;p.pasos=o.pasos;if(!p.tecnologia)p.tecnologia=o.tecnologia;if(!p.servicio)p.servicio=o.servicio;if(!p.grado)p.grado=o.grado;if(!p.resultado)p.resultado=o.resultado;if(!p.un)p.un=o.un;if(!p.motivo)p.motivo=o.motivo;if(!p.cierre)p.cierre=o.cierre;if(!p.paisOrigen)p.paisOrigen=o.paisOrigen;if(!p.tipologia)p.tipologia=o.tipologia;if(!p.tipoProyecto)p.tipoProyecto=o.tipoProyecto;if(!p.descServicio)p.descServicio=o.descServicio;if(!p.perfil)p.perfil=o.perfil;}p.unidades=_units((p.situacion||'')+' '+p.cliente);});
-    STATE.dataset={pipeline:parsed.pipeline,contactos:RAW['Contactos'],at:new Date().toISOString(),src:'sharepoint'};
     STATE.stageOverride={};save();
-    alert('✓ Pipeline actualizado desde SharePoint: '+parsed.pipeline.length+' clientes.\n\nNota: se actualizaron cliente, nivel, estado y monto. La situación, responsable y próximos pasos se conservan del último import completo (usa «Excel» para refrescar también esos campos). Se recargará el dashboard.');
-    location.reload();
+    applyPipeline(parsed.pipeline,RAW['Contactos']);rerenderAll();btn.textContent=old;btn.disabled=false;
+    alert('✓ Pipeline actualizado desde SharePoint: '+parsed.pipeline.length+' clientes.\n\nAplicado a esta sesión (al recargar vuelve a los datos base). Se leyeron cliente, nivel, estado, monto y grado de probabilidad.');
   }catch(e){alert('No se pudo actualizar desde SharePoint: '+(e.message||e));btn.textContent=old;btn.disabled=false;}
 }
 document.getElementById('btnSP').onclick=updateFromSharePoint;
-(function(){var rb=document.getElementById('btnReset');if(rb)rb.onclick=function(){if(confirm('¿Restablecer a los datos originales del dashboard? Se descartará el último import de Excel/SharePoint guardado en este navegador (no afecta tu archivo real).')){try{delete STATE.dataset;}catch(e){STATE.dataset=null;}STATE.stageOverride={};save();location.reload();}};})();
+(function(){var rb=document.getElementById('btnReset');if(rb)rb.onclick=function(){if(confirm('¿Recargar los datos base del dashboard? Se descartará cualquier import aplicado en esta sesión (no afecta tu archivo real).')){try{delete STATE.dataset;}catch(e){STATE.dataset=null;}STATE.stageOverride={};save();location.reload();}};})();
 
 /* Init */
 
@@ -1127,7 +1122,11 @@ function dimQuarter(label){return dealsWhere(function(p){if(p.estado==='Perdido'
 function dimCliente(label){return dealsWhere(function(p){return p.cliente===label;});}
 function dimLoss(label){return dealsWhere(function(p){return p.estado==='Perdido'&&p.motivo===label;});}
 function dimForecast(label){var MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return dealsWhere(function(p){if(p.estado==='Perdido')return false;if(num(p.monto)===0)return false;var k='Sin fecha';if(p.cierre){var d=new Date(p.cierre);if(!isNaN(d)){if(typeof mvFcMode!=='undefined'&&mvFcMode==='mes')k=MES[d.getMonth()]+' '+d.getFullYear();else k=d.getFullYear()+'-Q'+(Math.floor(d.getMonth()/3)+1);}}return k===String(label);});}
-var DIMMAP={mvFunnel:dimEstado,mvUN:dimField('un'),mvSvc:dimField('servicio'),mvTec:dimField('tecnologia'),mvPais:dimField('pais'),mvConc:dimCliente,mvLoss:dimLoss,mvNivel:dimField('nivel'),mvRes:dimField('resultado'),mvQuarter:dimForecast};
+var UN_NAMES={PVOM:'PV O&M',WDOM:'Wind O&M',ENG:'Ingeniería',AMN:'Asset Mgmt',SET:'Subestaciones',STR:'Estructuras',OTHR:'Otros'};
+function unLabel(k){return UN_NAMES[k]||k;}
+function unCode(label){for(var k in UN_NAMES){if(UN_NAMES[k]===label)return k;}return label;}
+function dimUN(label){var code=unCode(label);return dealsWhere(function(p){return String(p.un||'')===code;});}
+var DIMMAP={mvFunnel:dimEstado,mvUN:dimUN,mvTec:dimField('tecnologia'),mvPais:dimField('pais'),mvConc:dimCliente,mvLoss:dimLoss,mvNivel:dimField('nivel'),mvRes:dimField('resultado'),mvQuarter:dimForecast};
 function openDealList(titulo,ds){var mb=document.getElementById('modalBg');if(!mb)return;document.getElementById('mTitle').textContent=String(titulo);var tt=ds.reduce(function(s,x){return s+x.u;},0);document.getElementById('mSub').innerHTML=ds.length+' negocio(s) · '+fmtUSD(tt)+' (USD)';document.getElementById('mBody').innerHTML='<div class="table-scroll" style="border:none"><table><thead><tr><th>Cliente</th><th>País</th><th>Estado</th><th>Monto</th><th>USD</th></tr></thead><tbody>'+ds.map(function(x){var p=x.p;return '<tr><td class="c-name" onclick="openClient(\''+esc(p.pais)+'\',\''+esc(p.cliente)+'\')">'+esc(p.cliente)+'</td><td class="mini">'+esc(p.pais)+'</td><td>'+stBadge(p.estado)+'</td><td>'+(p.monto?num(p.monto).toLocaleString('es-CL')+' '+esc(p.moneda):'—')+'</td><td class="money">'+(x.u?Math.round(x.u).toLocaleString('es-CL'):'—')+'</td></tr>';}).join('')+'</tbody></table></div>';mb.classList.add('open');}
 function mvGrado(g){if(!g)return null;g=String(g).trim().toLowerCase();if(g.indexOf('ejecu')>=0)return 100;const m=g.match(/(\d+)\s*%/);if(m)return parseInt(m[1]);return null;}
 function mvProb(p){const g=mvGrado(p.grado);if(g!=null)return g;return STAGE_PROB[p.estado]!=null?STAGE_PROB[p.estado]:10;}
@@ -1194,9 +1193,8 @@ function _mandoCore(){
   const byC={};PIPE.forEach(function(p){if(!byC[p.estado])byC[p.estado]={Chile:0,'Perú':0};byC[p.estado][p.pais]=(byC[p.estado][p.pais]||0)+1;});
   var FST=STAGES_ALL.filter(function(s){return s!=='Ganado';});mvChart('mvFunnel',{type:'bar',data:{labels:FST,datasets:[{label:'Chile',data:FST.map(function(s){return (byC[s]||{}).Chile||0;}),backgroundColor:navy},{label:'Perú',data:FST.map(function(s){return (byC[s]||{})['Perú']||0;}),backgroundColor:amber}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true,ticks:{precision:0}},y:{stacked:true}}})});
   renderFcChart();
-  if(mvHas('un')){const m=mvAgg('un');const ks=Object.keys(m);mvChart('mvUN',{type:'bar',data:{labels:ks,datasets:[{label:'Valor USD',data:ks.map(function(k){return Math.round(m[k].v);}),backgroundColor:navy}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return (v/1e6).toFixed(1)+'M';}}}}})});}
+  if(mvHas('un')){var mun=mvAgg('un');var uks=Object.keys(mun).sort(function(a,b){return mun[b].v-mun[a].v;});var unTot=uks.reduce(function(s,k){return s+mun[k].v;},0);var ucap=document.getElementById('mvUNCap');if(ucap)ucap.textContent=fmtUSD(unTot)+' · '+uks.length+' unidad(es)';mvChart('mvUN',{type:'bar',data:{labels:uks.map(unLabel),datasets:[{label:'Valor USD',data:uks.map(function(k){return Math.round(mun[k].v);}),backgroundColor:uks.map(function(k,i){return MVP[i%MVP.length];}),borderRadius:6,maxBarThickness:40}]},options:Object.assign({},MVO,{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return (v/1e6).toFixed(1)+'M';}}},y:{ticks:{font:{weight:'700'}}}}})},dimUN);}
   else mvNo('mvBoxUN','Clasifica cada negocio por Unidad (UN) en el Excel y cárgalo con ⬆ Actualizar Excel.');
-  mvDim('servicio','mvSvc','mvBoxSvc','Clasifica el Servicio de cada negocio en el Excel.',amber);
   if(mvHas('tecnologia')){const m=mvAgg('tecnologia');const ks=Object.keys(m).sort(function(a,b){return m[b].v-m[a].v;});mvChart('mvTec',{type:'doughnut',data:{labels:ks,datasets:[{data:ks.map(function(k){return Math.round(m[k].v)||m[k].n;}),backgroundColor:MVP,borderColor:'#fff',borderWidth:2}]},options:Object.assign({},MVO,{cutout:'58%',plugins:{legend:{position:'right'},tooltip:{callbacks:{label:function(c){var k=c.label;return ' '+m[k].n+' negocio(s) · '+fmtUSD(m[k].v);}}}}})});}
   else mvNo('mvBoxTec','Clasifica la Tecnología de cada negocio en el Excel.');
   var mpais=mvAgg('pais');var pks=Object.keys(mpais).sort(function(a,b){return mpais[b].v-mpais[a].v;});if(pks.length){mvChart('mvPais',{type:'doughnut',data:{labels:pks,datasets:[{data:pks.map(function(k){return Math.round(mpais[k].v)||mpais[k].n;}),backgroundColor:[navy,amber,green,lightn]}]},options:Object.assign({},MVO,{cutout:'58%',plugins:{legend:{position:'right'},tooltip:{callbacks:{label:function(c){var k=c.label;return ' '+mpais[k].n+' negocio(s) · '+fmtUSD(mpais[k].v);}}}}})});}else mvNo('mvBoxPais','Sin datos.');
